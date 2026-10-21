@@ -8,7 +8,7 @@
 <style>
   :root{
     --ink:#0f172a; --body:#334155; --muted:#64748b; --line:#e6ebf2; --soft:#f7f9fc;
-    --accent:#1d4ed8; --chip:#eef2f8; --good:#0f7a52;
+    --accent:#1d4ed8; --chip:#eef2f8;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html,body{margin:0; height:100%}
@@ -17,23 +17,36 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
   }
-  #app{
-    position:relative; background:#fff; max-width:430px; margin:0 auto;
-    min-height:100dvh; box-shadow:0 0 60px rgba(15,23,42,.10); overflow:hidden;
-  }
+  #app{position:relative; background:#fff; max-width:430px; margin:0 auto; min-height:100dvh;
+       box-shadow:0 0 60px rgba(15,23,42,.10); overflow:hidden}
   @media (max-width:480px){ #app{box-shadow:none} body{background:#fff} }
 
-  .screen{padding:8px 22px 108px}
+  .screen{padding:8px 22px 168px}
   .status{height:40px; display:flex; align-items:center; justify-content:space-between; padding:0 4px;
           font-size:12.5px; font-weight:600; color:var(--ink); opacity:.75}
   .eyebrow{font-size:12px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); font-weight:650}
   .date{font-size:15px; color:var(--ink); font-weight:600; margin-top:3px}
 
+  /* single-vice hero */
   .big{font-size:96px; line-height:.9; letter-spacing:-.045em; font-weight:700; color:var(--ink);
        margin:22px 0 0; font-variant-numeric:tabular-nums}
   .unit{font-size:16.5px; margin-top:8px; color:var(--body)}
   .compare{margin-top:14px; display:flex; gap:16px; flex-wrap:wrap; font-size:13.5px; color:var(--muted)}
   .compare b{color:var(--ink); font-weight:600}
+
+  /* multi-vice cards */
+  .cards-v{margin-top:18px; display:flex; flex-direction:column; gap:12px}
+  .vcard{border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; background:#fff}
+  .vcard .top{display:flex; align-items:center; gap:8px}
+  .vcard .swatch{width:9px; height:9px; border-radius:3px}
+  .vcard .nm{font-size:13px; font-weight:650; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+  .vcard .num{font-size:52px; line-height:1; letter-spacing:-.04em; font-weight:700; color:var(--ink);
+              margin:10px 0 0; font-variant-numeric:tabular-nums}
+  .vcard .sub{font-size:13px; color:var(--muted); margin-top:4px}
+  .vcard .sub b{color:var(--ink); font-weight:600}
+  .vcard{font-family:inherit}
+  .vcard .chev{margin-left:auto; font-size:11.5px; color:#a9b4c4; letter-spacing:.04em}
+  .vcard:active{background:var(--soft)}
 
   .cta{margin-top:22px; height:58px; border-radius:16px; background:var(--ink); color:#fff; border:0; width:100%;
        font-size:16.5px; font-weight:650; font-family:inherit; letter-spacing:.01em; cursor:pointer;
@@ -45,24 +58,35 @@
 
   .listhead{margin:26px 0 8px; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
             color:var(--muted); font-weight:650}
-  .entry{display:flex; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--line);
-         font-size:15px; cursor:pointer}
+  .entry{display:flex; align-items:center; gap:11px; padding:12px 0; border-top:1px solid var(--line);
+         font-size:15px; cursor:pointer; background:none; border-left:0; border-right:0; border-bottom:0;
+         width:100%; text-align:left; font-family:inherit; color:inherit}
   .entry:active{opacity:.6}
   .entry .t{font-variant-numeric:tabular-nums; color:var(--ink); font-weight:600; width:54px}
+  .entry .vd{width:8px; height:8px; border-radius:3px; flex:0 0 auto}
   .entry .tag{font-size:13px; color:var(--muted)}
-  .entry .dot{width:7px; height:7px; border-radius:50%; background:var(--accent); opacity:.5; margin-left:auto}
+  .entry .dot{width:7px; height:7px; border-radius:50%; background:var(--accent); opacity:.45; margin-left:auto}
   .empty{padding:22px 0; color:#9aa5b6; font-size:14.5px; border-top:1px solid var(--line)}
 
-  /* tabs */
+  #bar{position:fixed; left:50%; transform:translateX(-50%); width:min(430px,100%);
+       bottom:calc(74px + env(safe-area-inset-bottom)); display:flex; gap:10px;
+       padding:10px 22px 10px; background:rgba(255,255,255,.97); backdrop-filter:blur(12px);
+       border-top:1px solid var(--line); z-index:19}
+  .bar-btn{flex:1; height:54px; border-radius:14px; border:0; background:var(--ink); color:#fff;
+           font-family:inherit; font-size:16px; font-weight:650; cursor:pointer; letter-spacing:.01em;
+           display:flex; align-items:center; justify-content:center; gap:7px}
+  .bar-btn:active{transform:scale(.99); background:#1e293b}
+  .bar-btn .plus{font-size:19px; font-weight:500; opacity:.75; line-height:1}
+  .bar-more{width:54px; height:54px; border-radius:14px; border:1.5px solid var(--line); background:#fff;
+            color:var(--ink); font-size:20px; font-family:inherit; cursor:pointer; flex:0 0 auto; line-height:1}
   nav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:min(430px,100%);
-      height:74px; background:rgba(255,255,255,.96); backdrop-filter:blur(12px);
-      border-top:1px solid var(--line); display:flex; padding-bottom:env(safe-area-inset-bottom); z-index:20}
+      height:74px; background:rgba(255,255,255,.97); backdrop-filter:blur(12px);
+      display:flex; padding-bottom:env(safe-area-inset-bottom); z-index:20}
   .tab{flex:1; border:0; background:none; display:flex; flex-direction:column; align-items:center; gap:4px;
        padding:12px 0 10px; font-size:10.5px; color:#94a3b8; font-family:inherit; cursor:pointer}
   .tab.on{color:var(--ink); font-weight:650}
   .tab svg{width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round}
 
-  /* sheet */
   .veil{position:fixed; inset:0; background:rgba(15,23,42,.34); opacity:0; pointer-events:none;
         transition:opacity .22s ease; z-index:30}
   .veil.on{opacity:1; pointer-events:auto}
@@ -92,18 +116,16 @@
   .del{background:none; border:0; color:#b42318; font-size:14.5px; font-family:inherit; font-weight:600;
        padding:12px 4px; cursor:pointer}
 
-  /* stats */
   .seg{display:flex; background:#eef1f6; border-radius:11px; padding:3px; margin-top:12px; font-size:14px; font-weight:600}
-  .seg button{flex:1; border:0; background:none; font-family:inherit; font-size:14px; font-weight:600;
-              padding:8px 0; border-radius:9px; color:#64748b; cursor:pointer}
+  .seg button{flex:1; border:0; background:none; font-family:inherit; font-size:13.5px; font-weight:600;
+              padding:8px 4px; border-radius:9px; color:#64748b; cursor:pointer; white-space:nowrap}
   .seg button.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(15,23,42,.10)}
   .hero-num{margin-top:22px; display:flex; align-items:baseline; gap:9px}
   .hero-num b{font-size:54px; line-height:1; letter-spacing:-.035em; color:var(--ink); font-variant-numeric:tabular-nums}
   .hero-num span{font-size:14.5px; color:var(--muted)}
-  .delta{margin-top:6px; font-size:13.5px; font-weight:600}
+  .delta{margin-top:6px; font-size:13.5px; font-weight:600; color:var(--muted)}
   .chart{margin-top:20px; height:140px; display:flex; align-items:flex-end; gap:5px}
   .bar{flex:1; background:#dbe3ef; border-radius:4px 4px 2px 2px; min-height:3px}
-  .bar.hi{background:var(--accent)}
   .axis{margin-top:6px; display:flex; gap:5px; font-size:10px; color:#9aa5b6}
   .axis div{flex:1; text-align:center; overflow:hidden; white-space:nowrap}
   .cards{display:flex; gap:11px; margin-top:22px}
@@ -112,8 +134,11 @@
   .card .v{font-size:22px; color:var(--ink); font-weight:650; margin-top:6px; letter-spacing:-.02em;
            font-variant-numeric:tabular-nums}
   .card .s{font-size:12px; color:var(--muted); margin-top:2px}
+  .totalrow{display:flex; justify-content:space-between; align-items:baseline; margin-top:14px;
+            padding:14px 15px; border:1px solid var(--line); border-radius:14px; background:#fff}
+  .totalrow .k{font-size:13.5px; color:var(--body)}
+  .totalrow .v{font-size:19px; font-weight:650; color:var(--ink); font-variant-numeric:tabular-nums}
 
-  /* history */
   .monthbar{display:flex; align-items:center; justify-content:space-between; margin-top:14px}
   .monthbar b{font-size:19px; color:var(--ink)}
   .navbtns{display:flex; gap:8px}
@@ -134,12 +159,11 @@
   .daypanel .h b{font-size:15px; color:var(--ink)}
   .daypanel .h span{font-size:13px; color:var(--muted)}
 
-  /* settings */
   .srow{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:15px 0;
         border-bottom:1px solid var(--line)}
   .srow .lab{font-size:15px; color:var(--ink); font-weight:550}
   .srow .sub{font-size:12.5px; color:var(--muted); margin-top:2px}
-  .srow input[type=number]{width:104px; text-align:right}
+  .srow input[type=number]{width:96px; text-align:right}
   .srow input[type=time]{width:146px; text-align:right}
   .switch{position:relative; width:48px; height:28px; border-radius:999px; background:#dbe3ef; border:0;
           cursor:pointer; transition:background .18s ease; flex:0 0 auto}
@@ -152,8 +176,11 @@
   .ghostbtn{border:1.5px solid var(--line); background:#fff; border-radius:12px; width:100%; padding:14px;
             font-size:15px; font-family:inherit; font-weight:600; color:var(--ink); margin-top:10px; cursor:pointer}
   .note{font-size:12.5px; color:#94a3b8; margin-top:14px; line-height:1.5}
+  .vhead{display:flex; align-items:center; gap:9px; margin-top:24px}
+  .vhead .swatch{width:10px; height:10px; border-radius:3px}
+  .vhead b{font-size:15px; color:var(--ink)}
+  .vhead .kick{font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:650}
 
-  /* intro */
   .intro{position:fixed; inset:0; background:#fff; z-index:50; display:flex; flex-direction:column;
          justify-content:space-between; padding:56px 28px 40px; max-width:430px; margin:0 auto}
   .intro.hidden{display:none}
@@ -162,7 +189,7 @@
   .intro p{font-size:16px; color:var(--body); margin:14px 0 0; max-width:26em}
   .intro .foot{font-size:13px; color:#94a3b8}
 
-  #toast{position:fixed; left:50%; bottom:96px; transform:translate(-50%,14px); background:#0f172a; color:#fff;
+  #toast{position:fixed; left:50%; bottom:158px; transform:translate(-50%,14px); background:#0f172a; color:#fff;
          font-size:14px; padding:11px 18px; border-radius:999px; opacity:0; transition:all .2s ease;
          pointer-events:none; z-index:40; white-space:nowrap}
   #toast.on{opacity:1; transform:translate(-50%,0)}
@@ -172,17 +199,18 @@
 
 <div id="app">
   <div id="screen"></div>
+  <div id="bar"></div>
   <nav id="tabs"></nav>
 </div>
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype</div>
+    <div class="kicker">Prototype · v2</div>
     <h1>Every cigarette, counted.</h1>
     <p>One tap logs one. Numbers come back honest — no streaks to break, no lectures.</p>
   </div>
   <div>
-    <p style="font-size:14px; color:var(--muted); margin:0 0 18px">This is a clickable mock-up. Data lives in this browser only. Nothing is sent anywhere.</p>
+    <p style="font-size:14px; color:var(--muted); margin:0 0 18px">Vaping is switched off by default. Turn it on in Settings to see how the app looks with two vices.</p>
     <button class="cta" id="introGo">Start</button>
     <p class="foot" style="margin-top:18px">ViceMaxxing · a prototype, not the app</p>
   </div>
@@ -194,242 +222,265 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v1';
-  const UNIT_PRICE_DEFAULT = 107, STICKS_DEFAULT = 20;
+  const KEY = 'vicemaxxing.prototype.v2';
   const TRIGGERS = ['Coffee','Stress','Social','After meal','Boredom','Other'];
   const DAY = 86400000;
 
-  // deterministic pseudo-random so the demo looks the same on every load
   let seed = 20261021;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
   const pick = a => a[Math.floor(rnd() * a.length)];
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const VICE_DEFAULT = [
+    { id:'smoke', name:'Cigarettes', unit:'cigarette', plural:'cigarettes',
+      price:107, per:20, colour:'#1d4ed8', on:true },
+    { id:'vape', name:'Vaping', unit:'pod', plural:'pods',
+      price:55, per:1, colour:'#0f766e', on:false }
+  ];
 
   function seedEvents(){
     const out = [];
     for (let back = 29; back >= 0; back--){
       const day = new Date(today.getTime() - back * DAY);
+      const maxHour = back === 0 ? Math.max(3, new Date().getHours()) : 23;
+
+      // cigarettes, every day
       let count = 6 + Math.floor(rnd() * 6);
-      if (back === 0) count = Math.min(count, Math.max(3, Math.round((new Date().getHours()) / 3)));
+      if (back === 0) count = Math.max(2, Math.round(maxHour / 3));
       for (let i = 0; i < count; i++){
         const hour = 7 + Math.floor((i / count) * 15) + Math.floor(rnd() * 2);
-        const d = new Date(day); d.setHours(hour, Math.floor(rnd() * 60), 0, 0);
+        const d = new Date(day); d.setHours(Math.min(hour, maxHour), Math.floor(rnd() * 60), 0, 0);
         if (d > new Date()) continue;
-        out.push({
-          id: 'e' + d.getTime() + i,
-          ts: d.toISOString(),
-          craving: 1 + Math.floor(rnd() * 5),
-          trigger: pick(TRIGGERS),
-          note: ''
-        });
+        out.push({ id:'s' + d.getTime() + i, viceId:'smoke', ts:d.toISOString(),
+                   craving:1 + Math.floor(rnd() * 5), trigger:pick(TRIGGERS), note:'' });
+      }
+
+      // vaping, only the last 9 days — looks like something you added recently
+      if (back <= 8){
+        const vcount = 1 + Math.floor(rnd() * 3);
+        for (let i = 0; i < vcount; i++){
+          const hour = 10 + Math.floor((i / Math.max(1, vcount)) * 12) + Math.floor(rnd() * 2);
+          const d = new Date(day); d.setHours(Math.min(hour, maxHour), Math.floor(rnd() * 60), 0, 0);
+          if (d > new Date()) continue;
+          out.push({ id:'v' + d.getTime() + i, viceId:'vape', ts:d.toISOString(),
+                     craving:1 + Math.floor(rnd() * 5), trigger:pick(['Boredom','Social','Stress','Other']), note:'' });
+        }
       }
     }
     return out.sort((a,b) => new Date(a.ts) - new Date(b.ts));
   }
 
-  const fresh = () => ({ price: UNIT_PRICE_DEFAULT, sticks: STICKS_DEFAULT, reminder: true,
-                         reminderTime: '21:00', intro: false, events: seedEvents() });
+  const fresh = () => ({ vices: JSON.parse(JSON.stringify(VICE_DEFAULT)), events: seedEvents(),
+                         reminder:true, reminderTime:'21:00', intro:false });
 
   let state;
   try { state = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ state = fresh(); }
-  if (!state.events) state = fresh();
+  if (!state.events || !state.vices) state = fresh();
   const save = () => localStorage.setItem(KEY, JSON.stringify(state));
 
-  let tab = 'today';
-  let statsWindow = 7;
+  let tab = 'today', statsWindow = 7, filterVice = 'smoke';
   let calMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   let selectedDay = new Date(today);
   let editing = null;
 
-  const unitPrice = () => state.price / state.sticks;
+  const vice = id => state.vices.find(v => v.id === id) || state.vices[0];
+  const active = () => state.vices.filter(v => v.on);
+  const unitCost = v => v.price / v.per;
   const money = n => 'HK$' + (n >= 100 ? Math.round(n) : n.toFixed(2));
-  const moneyRound = n => 'HK$' + Math.round(n);
   const hhmm = d => d.toTimeString().slice(0,5);
   const clock = () => new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
   const dayKey = d => { const x = new Date(d); x.setHours(0,0,0,0); return x.getTime(); };
-  const eventsOn = d => state.events.filter(e => dayKey(e.ts) === dayKey(d));
-  const countOn = d => eventsOn(d).length;
-
-  function lastNDays(n){
-    const out = [];
-    for (let i = n - 1; i >= 0; i--) out.push(new Date(today.getTime() - i * DAY));
-    return out;
-  }
-
-  function longestGap(events){
-    if (events.length < 2) return 0;
-    let max = 0;
-    for (let i = 1; i < events.length; i++){
-      max = Math.max(max, new Date(events[i].ts) - new Date(events[i-1].ts));
-    }
-    return max;
-  }
-  const dur = ms => {
-    const h = Math.floor(ms / 3600000), m = Math.round((ms % 3600000) / 60000);
-    return h > 0 ? h + 'h ' + m + 'm' : m + 'm';
-  };
-
+  const onDay = (d, vid) => state.events.filter(e => dayKey(e.ts) === dayKey(d) && (!vid || e.viceId === vid));
   const E = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-  /* ---------- screens ---------- */
+  function lastNDays(n){ const out = []; for (let i = n - 1; i >= 0; i--) out.push(new Date(today.getTime() - i * DAY)); return out; }
+  const dur = ms => { const h = Math.floor(ms/3600000), m = Math.round((ms%3600000)/60000); return h > 0 ? h + 'h ' + m + 'm' : m + 'm'; };
+  function longestGap(evs){ if (evs.length < 2) return 0; let max = 0;
+    for (let i = 1; i < evs.length; i++) max = Math.max(max, new Date(evs[i].ts) - new Date(evs[i-1].ts)); return max; }
+
+  /* ---------- today ---------- */
 
   function screenToday(){
-    const n = countOn(new Date());
-    const yes = countOn(new Date(Date.now() - DAY));
-    const week = lastNDays(7).reduce((a,d) => a + countOn(d), 0) / 7;
-    const evs = eventsOn(new Date()).sort((a,b) => new Date(b.ts) - new Date(a.ts));
-    const diff = n - yes;
+    const act = active();
+    const multi = act.length > 1;
+    const allToday = onDay(new Date()).sort((a,b) => new Date(b.ts) - new Date(a.ts));
+
+    const hero = v => {
+      const n = onDay(new Date(), v.id).length;
+      const yes = onDay(new Date(Date.now() - DAY), v.id).length;
+      const week = lastNDays(7).reduce((a,d) => a + onDay(d, v.id).length, 0) / 7;
+      const diff = n - yes;
+      if (!multi){
+        return `
+          <div class="big">${n}</div>
+          <div class="unit">${v.plural}${v.per > 1 ? ' · HK$' + (n * unitCost(v)).toFixed(2) : ''}</div>
+          <div class="compare">
+            <span>Yesterday <b>${yes}</b></span>
+            <span>7-day avg <b>${week.toFixed(1)}</b></span>
+            <span><b>${diff === 0 ? '±0' : (diff > 0 ? '+' : '') + diff}</b> vs yesterday</span>
+          </div>
+          <div style="font-size:13px; color:#94a3b8; margin-top:18px">Tap ⋯ below for time, craving and trigger.</div>`;
+      }
+      return `
+        <button class="vcard" data-act="details" data-vice="${v.id}" style="text-align:left; width:100%; font-family:inherit; cursor:pointer">
+          <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
+            <span class="chev">details ›</span></div>
+          <div class="num">${n}</div>
+          <div class="sub">${v.plural} today · <b>${yes}</b> yesterday · avg <b>${week.toFixed(1)}</b></div>
+        </button>`;
+    };
+
     return `
       <div class="status"><span>${clock()}</span><span>ViceMaxxing</span></div>
       <div class="eyebrow">Today</div>
       <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
-      <div class="big">${n}</div>
-      <div class="unit">cigarette${n === 1 ? '' : 's'}</div>
-      <div class="compare">
-        <span>Yesterday <b>${yes}</b></span>
-        <span>7-day avg <b>${week.toFixed(1)}</b></span>
-        <span><b>${diff === 0 ? '±0' : (diff > 0 ? '+' : '') + diff}</b> vs yesterday</span>
-      </div>
-      <button class="cta" data-act="log-one">Log one</button>
-      <button class="cta ghost" data-act="log-details">Log with details</button>
-      <div class="listhead">Today</div>
-      ${evs.length ? evs.map(e => `
-        <div class="entry" data-edit="${e.id}">
+      ${multi ? `<div class="cards-v">${act.map(hero).join('')}</div>` : hero(act[0])}
+      <div class="listhead">Today${multi ? ' · both' : ''}</div>
+      ${allToday.length ? allToday.map(e => {
+        const v = vice(e.viceId);
+        return `<button class="entry" data-edit="${e.id}">
           <span class="t">${hhmm(new Date(e.ts))}</span>
-          <span class="tag">${e.trigger ? E(e.trigger) : 'no trigger'}${e.craving ? ' · ' + e.craving + '/5' : ''}</span>
+          ${multi ? `<span class="vd" style="background:${v.colour}"></span>` : ''}
+          <span class="tag">${multi ? E(v.name) + ' · ' : ''}${e.trigger ? E(e.trigger) : 'no trigger'}${e.craving ? ' · ' + e.craving + '/5' : ''}</span>
           <span class="dot"></span>
-        </div>`).join('') : `<div class="empty">Nothing logged yet today. One tap when you light up.</div>`}
+        </button>`;
+      }).join('') : `<div class="empty">Nothing logged yet today. One tap when you light up.</div>`}
     `;
   }
 
+  /* ---------- history ---------- */
+
   function screenHistory(){
+    const v = vice(filterVice);
     const first = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
-    const daysInMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
-    const lead = (first.getDay() + 6) % 7; // Monday-first
-    const counts = [];
-    for (let d = 1; d <= daysInMonth; d++) counts.push(countOn(new Date(first.getFullYear(), first.getMonth(), d)));
+    const days = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 0).getDate();
+    const lead = (first.getDay() + 6) % 7;
+    const counts = []; for (let d = 1; d <= days; d++) counts.push(onDay(new Date(first.getFullYear(), first.getMonth(), d), v.id).length);
     const max = Math.max(3, ...counts);
-    const shade = n => n === 0 ? '#ffffff' : n / max < .35 ? '#eef1f6' : n / max < .6 ? '#dbe3ef' : n / max < .85 ? '#a9bbdd' : '#1d4ed8';
-    const inkFor = n => n / max >= .85 ? '#ffffff' : '#41506a';
+    const base = v.colour;
+    const shade = n => n === 0 ? '' : n/max < .35 ? '#eef1f6' : n/max < .6 ? '#dbe3ef' : n/max < .85 ? '#a9bbdd' : base;
+    const inkFor = n => n/max >= .85 ? '#ffffff' : '#41506a';
 
     let cells = '';
     for (let i = 0; i < lead; i++) cells += '<div class="cell mute"></div>';
-    for (let d = 1; d <= daysInMonth; d++){
+    for (let d = 1; d <= days; d++){
       const date = new Date(first.getFullYear(), first.getMonth(), d);
       const n = counts[d-1];
       const future = date > today;
       const isToday = dayKey(date) === dayKey(today);
       const sel = dayKey(date) === dayKey(selectedDay);
-      const cls = ['cell', future ? 'mute' : '', isToday ? 'today' : '', sel && !isToday ? 'sel' : ''].join(' ');
-      const bg = (n && !future) ? shade(n) : '';
-      const col = (n && !future) ? inkFor(n) : '';
-      cells += `<button class="${cls}" data-day="${d}" ${future || !n && !isToday ? '' : ''}
-                 style="${bg ? `background:${bg};border-color:${bg};color:${col}` : ''}">${d}</button>`;
+      const bg = (!future && n) ? shade(n) : '';
+      cells += `<button class="cell ${future ? 'mute' : ''} ${isToday ? 'today' : ''} ${sel && !isToday ? 'sel' : ''}"
+                  data-day="${d}" style="${bg ? `background:${bg};border-color:${bg};color:${inkFor(n)}` : ''}">${d}</button>`;
     }
 
-    const selEvents = eventsOn(selectedDay).sort((a,b) => new Date(b.ts) - new Date(a.ts));
-    const selCount = selEvents.length;
+    const selEvents = onDay(selectedDay, v.id).sort((a,b) => new Date(b.ts) - new Date(a.ts));
 
     return `
       <div class="status"><span>${clock()}</span><span>History</span></div>
       <div class="eyebrow">History</div>
+      ${state.vices.length > 1 ? `<div class="seg">${state.vices.map(x =>
+        `<button data-filter="${x.id}" class="${filterVice === x.id ? 'on' : ''}">${E(x.name)}</button>`).join('')}</div>` : ''}
       <div class="monthbar">
         <b>${calMonth.toLocaleDateString('en-GB',{month:'long', year:'numeric'})}</b>
-        <div class="navbtns">
-          <button data-month="-1">‹</button>
-          <button data-month="1">›</button>
-        </div>
+        <div class="navbtns"><button data-month="-1">‹</button><button data-month="1">›</button></div>
       </div>
       <div class="dow">${['M','T','W','T','F','S','S'].map(d => `<div>${d}</div>`).join('')}</div>
       <div class="cal">${cells}</div>
-      <div class="legend">Less<i style="background:#eef1f6"></i><i style="background:#dbe3ef"></i><i style="background:#a9bbdd"></i><i style="background:#1d4ed8"></i>More</div>
+      <div class="legend">Less<i style="background:#eef1f6"></i><i style="background:#dbe3ef"></i><i style="background:#a9bbdd"></i><i style="background:${v.colour}"></i>More</div>
       <div class="daypanel">
-        <div class="h">
-          <b>${selectedDay.toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'})}</b>
-          <span>${selCount} cigarette${selCount === 1 ? '' : 's'} · ${moneyRound(selCount * unitPrice())}</span>
-        </div>
-        ${selEvents.length ? selEvents.map(e => `
-          <div class="entry" data-edit="${e.id}">
+        <div class="h"><b>${selectedDay.toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'})}</b>
+          <span>${selEvents.length} ${selEvents.length === 1 ? v.unit : v.plural} · HK$${Math.round(selEvents.length * unitCost(v))}</span></div>
+        ${selEvents.length ? selEvents.map(e => `<button class="entry" data-edit="${e.id}">
             <span class="t">${hhmm(new Date(e.ts))}</span>
             <span class="tag">${e.trigger ? E(e.trigger) : 'no trigger'}${e.craving ? ' · ' + e.craving + '/5' : ''}</span>
-            <span class="dot"></span>
-          </div>`).join('') : `<div class="empty">Nothing logged.</div>`}
-      </div>
-    `;
+            <span class="dot"></span></button>`).join('') : `<div class="empty">Nothing logged.</div>`}
+      </div>`;
   }
 
+  /* ---------- stats ---------- */
+
   function screenStats(){
+    const v = vice(filterVice);
     const days = lastNDays(statsWindow);
-    const counts = days.map(d => countOn(d));
+    const counts = days.map(d => onDay(d, v.id).length);
     const total = counts.reduce((a,b) => a + b, 0);
     const avg = total / statsWindow;
-    const prevDays = [];
-    for (let i = statsWindow * 2 - 1; i >= statsWindow; i--) prevDays.push(new Date(today.getTime() - i * DAY));
-    const prevAvg = prevDays.reduce((a,d) => a + countOn(d), 0) / statsWindow;
+    const prev = []; for (let i = statsWindow*2 - 1; i >= statsWindow; i--) prev.push(new Date(today.getTime() - i*DAY));
+    const prevAvg = prev.reduce((a,d) => a + onDay(d, v.id).length, 0) / statsWindow;
     const deltaPct = prevAvg ? Math.round(((avg - prevAvg) / prevAvg) * 100) : 0;
     const max = Math.max(1, ...counts);
 
-    const rangeEvents = state.events.filter(e => new Date(e.ts) >= days[0] && new Date(e.ts) < new Date(today.getTime() + DAY));
-    const byTrigger = {};
-    rangeEvents.forEach(e => { const k = e.trigger || 'Untagged'; byTrigger[k] = (byTrigger[k] || 0) + 1; });
-    const trigRows = Object.entries(byTrigger).sort((a,b) => b[1] - a[1]).slice(0,4);
+    const range = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= days[0] && new Date(e.ts) < new Date(today.getTime() + DAY));
+    const byTrigger = {}; range.forEach(e => { const k = e.trigger || 'Untagged'; byTrigger[k] = (byTrigger[k]||0)+1; });
+    const trigRows = Object.entries(byTrigger).sort((a,b) => b[1]-a[1]).slice(0,4);
 
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthCount = state.events.filter(e => new Date(e.ts) >= monthStart).length;
-    const gap = longestGap([...rangeEvents].sort((a,b) => new Date(a.ts) - new Date(b.ts)));
+    const monthCount = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= monthStart).length;
+    const gap = longestGap([...range].sort((a,b) => new Date(a.ts) - new Date(b.ts)));
 
-    const label = d => statsWindow === 7
-      ? d.toLocaleDateString('en-GB',{weekday:'narrow'})
+    const allMonth = state.vices.reduce((sum, x) => {
+      const c = state.events.filter(e => e.viceId === x.id && new Date(e.ts) >= monthStart).length;
+      return sum + c * unitCost(x);
+    }, 0);
+
+    const label = d => statsWindow === 7 ? d.toLocaleDateString('en-GB',{weekday:'narrow'})
       : (d.getDate() % 5 === 0 || d.getDate() === 1 ? String(d.getDate()) : '');
 
     return `
       <div class="status"><span>${clock()}</span><span>Stats</span></div>
       <div class="eyebrow">Stats</div>
-      <div class="seg">
+      ${state.vices.length > 1 ? `<div class="seg">${state.vices.map(x =>
+        `<button data-filter="${x.id}" class="${filterVice === x.id ? 'on' : ''}">${E(x.name)}</button>`).join('')}</div>` : ''}
+      <div class="seg" style="margin-top:8px">
         <button data-win="7" class="${statsWindow === 7 ? 'on' : ''}">7 days</button>
         <button data-win="30" class="${statsWindow === 30 ? 'on' : ''}">30 days</button>
       </div>
-      <div class="hero-num"><b>${avg.toFixed(1)}</b><span>per day</span></div>
-      <div class="delta" style="color:var(--muted)">
-        ${deltaPct === 0 ? 'Same as' : (deltaPct > 0 ? '+' : '') + deltaPct + '% vs'} the ${statsWindow} days before
-      </div>
-      <div class="chart">
-        ${counts.map(c => `<div class="bar ${c >= avg ? 'hi' : ''}" style="height:${Math.round(c / max * 100)}%"></div>`).join('')}
-      </div>
+      <div class="hero-num"><b>${avg.toFixed(1)}</b><span>${v.plural} per day</span></div>
+      <div class="delta">${deltaPct === 0 ? 'Same as' : (deltaPct > 0 ? '+' : '') + deltaPct + '% vs'} the ${statsWindow} days before</div>
+      <div class="chart">${counts.map(c => `<div class="bar ${c >= avg ? 'hi' : ''}" style="height:${Math.round(c/max*100)}%;${c >= avg ? 'background:' + v.colour : ''}"></div>`).join('')}</div>
       <div class="axis">${days.map(d => `<div>${label(d)}</div>`).join('')}</div>
       <div class="cards">
-        <div class="card"><div class="k">Spend</div><div class="v">${moneyRound(monthCount * unitPrice())}</div><div class="s">this month</div></div>
+        <div class="card"><div class="k">Spend</div><div class="v">${money(Math.round(monthCount * unitCost(v)))}</div><div class="s">${E(v.name)} this month</div></div>
         <div class="card"><div class="k">Longest gap</div><div class="v">${gap ? dur(gap) : '—'}</div><div class="s">last ${statsWindow} days</div></div>
       </div>
+      ${active().length > 1 ? `<div class="totalrow"><span class="k">All vices, this month</span><span class="v">${money(Math.round(allMonth))}</span></div>` : ''}
       <div class="listhead">By trigger${Object.keys(byTrigger).length > 4 ? ' · top 4 of ' + Object.keys(byTrigger).length : ''}</div>
-      ${trigRows.length ? trigRows.map(([k,v]) => `
-        <div class="entry" style="cursor:default">
+      ${trigRows.length ? trigRows.map(([k,c]) => `<div class="entry" style="cursor:default">
           <span class="t" style="width:auto">${E(k)}</span>
-          <span class="tag">${Math.round(v / rangeEvents.length * 100)}% · ${v}</span>
-          <span class="dot"></span>
-        </div>`).join('') : `<div class="empty">No entries in this window.</div>`}
-    `;
+          <span class="tag">${Math.round(c / Math.max(1, range.length) * 100)}% · ${c}</span>
+          <span class="dot"></span></div>`).join('') : `<div class="empty">No entries in this window.</div>`}`;
   }
 
+  /* ---------- settings ---------- */
+
   function screenSettings(){
+    const viceRows = state.vices.map((v, i) => `
+      <div class="vhead"><span class="swatch" style="background:${v.colour}"></span><b>${E(v.name)}</b>
+        <span class="kick" style="margin-left:auto">${v.on ? 'shown in Today' : 'hidden'}</span></div>
+      <div class="srow">
+        <div><div class="lab">Show on Today</div><div class="sub">switch vices on and off</div></div>
+        <button class="switch ${v.on ? 'on' : ''}" data-vice-toggle="${v.id}"><i></i></button>
+      </div>
+      <div class="srow">
+        <div><div class="lab">Price per ${v.per > 1 ? 'pack' : v.unit}</div><div class="sub">${v.per > 1 ? v.per + ' ' + v.plural + ' in it' : 'one ' + v.unit}</div></div>
+        <input type="number" data-price="${v.id}" value="${v.price}" min="1" step="1" inputmode="numeric">
+      </div>
+      ${v.per > 1 ? `<div class="srow">
+        <div><div class="lab">${v.plural} per pack</div><div class="sub">used for every money figure</div></div>
+        <input type="number" data-per="${v.id}" value="${v.per}" min="1" step="1" inputmode="numeric">
+      </div>` : ''}
+      <div class="srow">
+        <div><div class="lab">Cost per ${v.unit}</div><div class="sub">what the stats use</div></div>
+        <div style="font-size:16px; color:var(--ink); font-weight:650">HK$${unitCost(v).toFixed(2)}</div>
+      </div>`).join('');
+
     return `
       <div class="status"><span>${clock()}</span><span>Settings</span></div>
       <div class="eyebrow">Settings</div>
-      <div class="date" style="margin-bottom:8px">Your numbers</div>
-      <div class="srow">
-        <div><div class="lab">Pack price</div><div class="sub">what you actually pay</div></div>
-        <input type="number" id="price" value="${state.price}" min="1" step="1" inputmode="numeric">
-      </div>
-      <div class="srow">
-        <div><div class="lab">Sticks per pack</div><div class="sub">usually 20</div></div>
-        <input type="number" id="sticks" value="${state.sticks}" min="1" step="1" inputmode="numeric">
-      </div>
-      <div class="srow">
-        <div><div class="lab">Cost per cigarette</div><div class="sub">used for every money figure</div></div>
-        <div style="font-size:16px; color:var(--ink); font-weight:650">HK$${unitPrice().toFixed(2)}</div>
-      </div>
+      <div class="date" style="margin-bottom:4px">Your numbers</div>
+      ${viceRows}
       <div class="srow">
         <div><div class="lab">Daily reminder</div><div class="sub">a nudge, not a lecture</div></div>
         <button class="switch ${state.reminder ? 'on' : ''}" id="reminder"><i></i></button>
@@ -438,12 +489,10 @@
         <input type="time" id="rtime" value="${state.reminderTime}"></div>` : ''}
       <button class="ghostbtn" id="export">Export data</button>
       <button class="danger" id="wipe">Delete everything</button>
-      <p class="note">Prototype note: export downloads the JSON this screen has been building. In the real app it opens the Android share sheet.</p>
-    `;
+      <p class="note">Prototype note: export downloads the JSON this screen has been building. In the real app it opens the Android share sheet.</p>`;
   }
 
   const SCREENS = { today: screenToday, history: screenHistory, stats: screenStats, settings: screenSettings };
-
   const TABS = [
     ['today','Today','<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'],
     ['history','History','<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>'],
@@ -451,16 +500,21 @@
     ['settings','Settings','<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>']
   ];
 
-  function render(){
-    document.getElementById('screen').innerHTML = `<div class="screen">${SCREENS[tab]()}</div>`;
-    document.getElementById('tabs').innerHTML = TABS.map(([id,label,icon]) => `
-      <button class="tab ${tab === id ? 'on' : ''}" data-tab="${id}">
-        <svg viewBox="0 0 24 24">${icon}</svg>${label}
-      </button>`).join('');
-    window.scrollTo(0,0);
+  function renderBar(){
+    const act = active();
+    const multi = act.length > 1;
+    document.getElementById('bar').innerHTML =
+      act.map(v => `<button class="bar-btn" data-act="log" data-vice="${v.id}"><span class="plus">+</span>${multi ? v.unit.charAt(0).toUpperCase() + v.unit.slice(1) : 'Log one'}</button>`).join('')
+      + (multi ? '' : `<button class="bar-more" data-act="details" data-vice="${act[0].id}" aria-label="Log with details">⋯</button>`);
   }
 
-  /* ---------- interactions ---------- */
+  function render(){
+    document.getElementById('screen').innerHTML = `<div class="screen">${SCREENS[tab]()}</div>`;
+    renderBar();
+    document.getElementById('tabs').innerHTML = TABS.map(([id,label,icon]) => `
+      <button class="tab ${tab === id ? 'on' : ''}" data-tab="${id}"><svg viewBox="0 0 24 24">${icon}</svg>${label}</button>`).join('');
+    window.scrollTo(0,0);
+  }
 
   function toast(msg){
     const t = document.getElementById('toast');
@@ -468,70 +522,65 @@
     clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1600);
   }
 
-  function addEvent(extra){
+  function addEvent(viceId, extra){
     const now = new Date();
-    const ev = Object.assign({ id: 'e' + Date.now() + Math.floor(Math.random()*1000), ts: now.toISOString(),
-                               craving: 0, trigger: '', note: '' }, extra || {});
-    state.events.push(ev); save(); render();
-    return ev;
+    const ev = Object.assign({ id:'e' + Date.now() + Math.floor(Math.random()*1000), viceId,
+                               ts: now.toISOString(), craving:0, trigger:'', note:'' }, extra || {});
+    state.events.push(ev); save(); render(); return ev;
   }
 
-  function openSheet(ev){
+  function openSheet(ev, viceId){
     editing = ev || null;
+    const v = vice(ev ? ev.viceId : viceId);
     const d = ev ? new Date(ev.ts) : new Date();
     const sheet = document.getElementById('sheet');
     sheet.innerHTML = `
       <div class="grab"></div>
-      <h3>${ev ? 'Edit' : 'Log a'} cigarette</h3>
+      <h3>${ev ? 'Edit' : 'Log a'} ${v.unit}</h3>
+      <div class="fieldlabel">Vice</div>
+      <div class="chips">${active().map(x => `<button class="chip ${x.id === v.id ? 'on' : ''}" data-svice="${x.id}">${E(x.name)}</button>`).join('')}</div>
       <div class="fieldlabel">Time</div>
       <input type="time" id="stime" value="${hhmm(d)}">
       <div class="fieldlabel">Craving</div>
-      <div class="cravings" id="scrave">
-        ${[1,2,3,4,5].map(n => `<button class="cr ${ev && ev.craving === n ? 'on' : ''}" data-cr="${n}">${n}</button>`).join('')}
-      </div>
+      <div class="cravings">${[1,2,3,4,5].map(n => `<button class="cr ${ev && ev.craving === n ? 'on' : ''}" data-cr="${n}">${n}</button>`).join('')}</div>
       <div class="fieldlabel">Trigger · optional</div>
-      <div class="chips" id="schip">
-        ${TRIGGERS.map(t => `<button class="chip ${ev && ev.trigger === t ? 'on' : ''}" data-trig="${t}">${t}</button>`).join('')}
-      </div>
+      <div class="chips">${TRIGGERS.map(t => `<button class="chip ${ev && ev.trigger === t ? 'on' : ''}" data-trig="${t}">${t}</button>`).join('')}</div>
       <div class="rowbtns">
         <button class="cta" id="ssave">Save</button>
         ${ev ? '<button class="del" id="sdel">Delete</button>' : ''}
       </div>`;
-    const toastEl = document.getElementById('toast');
-    toastEl.classList.remove('on');
+    const toastEl = document.getElementById('toast'); toastEl.classList.remove('on');
     sheet.classList.add('on');
     document.getElementById('veil').classList.add('on');
 
-    let craving = ev ? ev.craving : 0, trigger = ev ? ev.trigger : '';
-    sheet.querySelectorAll('[data-cr]').forEach(b => {
-      b.onclick = () => {
-        const n = +b.dataset.cr;
-        craving = craving === n ? 0 : n;
-        sheet.querySelectorAll('[data-cr]').forEach(x => x.classList.toggle('on', +x.dataset.cr === craving));
-      };
+    let craving = ev ? ev.craving : 0, trigger = ev ? ev.trigger : '', chosen = v.id;
+
+    sheet.querySelectorAll('[data-cr]').forEach(b => b.onclick = () => {
+      const n = +b.dataset.cr; craving = craving === n ? 0 : n;
+      sheet.querySelectorAll('[data-cr]').forEach(x => x.classList.toggle('on', +x.dataset.cr === craving));
     });
-    sheet.querySelectorAll('[data-trig]').forEach(b => {
-      b.onclick = () => {
-        trigger = trigger === b.dataset.trig ? '' : b.dataset.trig;
-        sheet.querySelectorAll('[data-trig]').forEach(x => x.classList.toggle('on', x.dataset.trig === trigger));
-      };
+    sheet.querySelectorAll('[data-trig]').forEach(b => b.onclick = () => {
+      trigger = trigger === b.dataset.trig ? '' : b.dataset.trig;
+      sheet.querySelectorAll('[data-trig]').forEach(x => x.classList.toggle('on', x.dataset.trig === trigger));
     });
+    sheet.querySelectorAll('[data-svice]').forEach(b => b.onclick = () => {
+      chosen = b.dataset.svice;
+      sheet.querySelectorAll('[data-svice]').forEach(x => x.classList.toggle('on', x.dataset.svice === chosen));
+      sheet.querySelector('h3').textContent = (ev ? 'Edit' : 'Log a') + ' ' + vice(chosen).unit;
+    });
+
     document.getElementById('ssave').onclick = () => {
       const [h,m] = document.getElementById('stime').value.split(':').map(Number);
       const base = ev ? new Date(ev.ts) : new Date();
       base.setHours(h || 0, m || 0, 0, 0);
-      if (ev){
-        ev.ts = base.toISOString(); ev.craving = craving; ev.trigger = trigger;
-        save(); closeSheet(); render(); toast('Saved');
-      } else {
-        closeSheet(); addEvent({ ts: base.toISOString(), craving, trigger }); toast('Logged · ' + hhmm(base));
-      }
+      if (ev){ ev.ts = base.toISOString(); ev.craving = craving; ev.trigger = trigger; ev.viceId = chosen;
+        save(); closeSheet(); render(); toast('Saved'); }
+      else { closeSheet(); addEvent(chosen, { ts: base.toISOString(), craving, trigger });
+        toast('Logged · ' + hhmm(base) + ' · ' + vice(chosen).name); }
     };
     const del = document.getElementById('sdel');
-    if (del) del.onclick = () => {
-      state.events = state.events.filter(x => x.id !== ev.id);
-      save(); closeSheet(); render(); toast('Deleted');
-    };
+    if (del) del.onclick = () => { state.events = state.events.filter(x => x.id !== ev.id);
+      save(); closeSheet(); render(); toast('Deleted'); };
   }
 
   function closeSheet(){
@@ -545,15 +594,19 @@
     const t = e.target.closest('[data-tab]');
     if (t){ tab = t.dataset.tab; render(); return; }
 
-    const one = e.target.closest('[data-act]');
-    if (one){
-      if (one.dataset.act === 'log-one'){ const ev = addEvent(); toast('Logged · ' + hhmm(new Date(ev.ts))); }
-      if (one.dataset.act === 'log-details'){ openSheet(null); }
+    const act = e.target.closest('[data-act]');
+    if (act){
+      const vid = act.dataset.vice || active()[0].id;
+      if (act.dataset.act === 'log'){ const ev = addEvent(vid); toast('Logged · ' + hhmm(new Date(ev.ts)) + ' · ' + vice(vid).name); }
+      if (act.dataset.act === 'details'){ openSheet(null, vid); }
       return;
     }
 
     const edit = e.target.closest('[data-edit]');
     if (edit){ const ev = state.events.find(x => x.id === edit.dataset.edit); if (ev) openSheet(ev); return; }
+
+    const f = e.target.closest('[data-filter]');
+    if (f){ filterVice = f.dataset.filter; render(); return; }
 
     const day = e.target.closest('[data-day]');
     if (day){ selectedDay = new Date(calMonth.getFullYear(), calMonth.getMonth(), +day.dataset.day); render(); return; }
@@ -564,36 +617,35 @@
     const win = e.target.closest('[data-win]');
     if (win){ statsWindow = +win.dataset.win; render(); return; }
 
+    const vt = e.target.closest('[data-vice-toggle]');
+    if (vt){ const v = vice(vt.dataset.viceToggle); v.on = !v.on; save(); render(); return; }
+
     if (e.target.id === 'reminder'){ state.reminder = !state.reminder; save(); render(); return; }
 
     if (e.target.id === 'export'){
-      const blob = new Blob([JSON.stringify(state.events.map(x => ({ time: x.ts, craving: x.craving, trigger: x.trigger })), null, 2)],
-                            {type:'application/json'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = 'vicemaxxing-export.json'; a.click();
-      toast('Exported');
+      const rows = state.events.map(x => ({ time:x.ts, vice: vice(x.viceId).name, craving:x.craving, trigger:x.trigger }));
+      const blob = new Blob([JSON.stringify(rows, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'vicemaxxing-export.json'; a.click(); toast('Exported');
       return;
     }
 
     if (e.target.id === 'wipe'){
-      if (confirm('Delete every entry? This cannot be undone.')){
-        state.events = []; save(); render(); toast('Everything deleted');
-      }
-      return;
+      if (confirm('Delete every entry? This cannot be undone.')){ state.events = []; save(); render(); toast('Everything deleted'); }
     }
   });
 
   document.addEventListener('change', e => {
-    if (e.target.id === 'price'){ state.price = Math.max(1, +e.target.value || 1); save(); render(); }
-    if (e.target.id === 'sticks'){ state.sticks = Math.max(1, +e.target.value || 1); save(); render(); }
+    const pr = e.target.closest('[data-price]');
+    if (pr){ vice(pr.dataset.price).price = Math.max(1, +pr.value || 1); save(); render(); return; }
+    const pe = e.target.closest('[data-per]');
+    if (pe){ vice(pe.dataset.per).per = Math.max(1, +pe.value || 1); save(); render(); return; }
     if (e.target.id === 'rtime'){ state.reminderTime = e.target.value; save(); }
   });
 
   document.getElementById('introGo').onclick = () => {
-    document.getElementById('intro').classList.add('hidden');
-    state.intro = true; save();
+    document.getElementById('intro').classList.add('hidden'); state.intro = true; save();
   };
-
   if (state.intro) document.getElementById('intro').classList.add('hidden');
   render();
 })();
