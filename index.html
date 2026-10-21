@@ -254,10 +254,16 @@
     for (let back = 29; back >= 0; back--){
       const day = new Date(today.getTime() - back * DAY);
       const lastHour = back === 0 ? Math.max(3, new Date().getHours()) : 23;
-      const cCount = 6 + Math.floor(rnd() * 6);
+      const cCount = back === 0 ? 4 + Math.floor(rnd() * 3) : 6 + Math.floor(rnd() * 6);
       for (let i = 0; i < cCount; i++){
-        const hour = 7 + Math.floor((i / cCount) * 15) + Math.floor(rnd() * 2);
-        const d = new Date(day); d.setHours(Math.min(hour, lastHour), Math.floor(rnd()*60), 0, 0);
+        let d;
+        if (back === 0){
+          // spread today's entries over the hours already lived, so the demo looks real at any time of day
+          d = new Date(Date.now() - (i * 52 + 18 + Math.floor(rnd() * 25)) * 60000);
+        } else {
+          const hour = 7 + Math.floor((i / cCount) * 15) + Math.floor(rnd() * 2);
+          d = new Date(day); d.setHours(Math.min(hour, lastHour), Math.floor(rnd()*60), 0, 0);
+        }
         if (d > new Date()) continue;
         out.push({ id:'s'+d.getTime()+i, viceId:'smoke', formId: rnd() < .22 ? 'pod' : 'cig',
                    ts:d.toISOString(), craving:1+Math.floor(rnd()*5), trigger:pick(TRIGGERS), note:'' });
