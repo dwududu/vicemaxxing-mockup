@@ -12,11 +12,9 @@
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html,body{margin:0; height:100%}
-  body{
-    background:#eef1f6; color:var(--body);
+  body{background:#eef1f6; color:var(--body);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
-  }
+    font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased}
   #app{position:relative; background:#fff; max-width:430px; margin:0 auto; min-height:100dvh;
        box-shadow:0 0 60px rgba(15,23,42,.10); overflow:hidden}
   @media (max-width:480px){ #app{box-shadow:none} body{background:#fff} }
@@ -27,34 +25,24 @@
   .eyebrow{font-size:12px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); font-weight:650}
   .date{font-size:15px; color:var(--ink); font-weight:600; margin-top:3px}
 
-  /* single-vice hero */
   .big{font-size:96px; line-height:.9; letter-spacing:-.045em; font-weight:700; color:var(--ink);
        margin:22px 0 0; font-variant-numeric:tabular-nums}
   .unit{font-size:16.5px; margin-top:8px; color:var(--body)}
   .compare{margin-top:14px; display:flex; gap:16px; flex-wrap:wrap; font-size:13.5px; color:var(--muted)}
   .compare b{color:var(--ink); font-weight:600}
 
-  /* multi-vice cards */
   .cards-v{margin-top:18px; display:flex; flex-direction:column; gap:12px}
-  .vcard{border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px; background:#fff}
+  .vcard{border:1px solid var(--line); border-radius:18px; padding:16px; background:#fff;
+         text-align:left; width:100%; font-family:inherit; cursor:pointer}
+  .vcard:active{background:var(--soft)}
   .vcard .top{display:flex; align-items:center; gap:8px}
   .vcard .swatch{width:9px; height:9px; border-radius:3px}
   .vcard .nm{font-size:13px; font-weight:650; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+  .vcard .chev{margin-left:auto; font-size:11.5px; color:#a9b4c4; letter-spacing:.04em}
   .vcard .num{font-size:52px; line-height:1; letter-spacing:-.04em; font-weight:700; color:var(--ink);
               margin:10px 0 0; font-variant-numeric:tabular-nums}
-  .vcard .sub{font-size:13px; color:var(--muted); margin-top:4px}
+  .vcard .sub{font-size:13px; color:var(--muted); margin-top:5px}
   .vcard .sub b{color:var(--ink); font-weight:600}
-  .vcard{font-family:inherit}
-  .vcard .chev{margin-left:auto; font-size:11.5px; color:#a9b4c4; letter-spacing:.04em}
-  .vcard:active{background:var(--soft)}
-
-  .cta{margin-top:22px; height:58px; border-radius:16px; background:var(--ink); color:#fff; border:0; width:100%;
-       font-size:16.5px; font-weight:650; font-family:inherit; letter-spacing:.01em; cursor:pointer;
-       transition:transform .08s ease, background .15s ease}
-  .cta:active{transform:scale(.985); background:#1e293b}
-  .cta.ghost{background:#fff; color:var(--ink); border:1.5px solid var(--line); height:50px;
-             font-size:15px; font-weight:600; margin-top:10px}
-  .cta.ghost:active{background:var(--soft)}
 
   .listhead{margin:26px 0 8px; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
             color:var(--muted); font-weight:650}
@@ -64,13 +52,12 @@
   .entry:active{opacity:.6}
   .entry .t{font-variant-numeric:tabular-nums; color:var(--ink); font-weight:600; width:54px}
   .entry .vd{width:8px; height:8px; border-radius:3px; flex:0 0 auto}
-  .entry .tag{font-size:13px; color:var(--muted)}
-  .entry .dot{width:7px; height:7px; border-radius:50%; background:var(--accent); opacity:.45; margin-left:auto}
+  .entry .tag{font-size:13px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
   .empty{padding:22px 0; color:#9aa5b6; font-size:14.5px; border-top:1px solid var(--line)}
 
   #bar{position:fixed; left:50%; transform:translateX(-50%); width:min(430px,100%);
        bottom:calc(74px + env(safe-area-inset-bottom)); display:flex; gap:10px;
-       padding:10px 22px 10px; background:rgba(255,255,255,.97); backdrop-filter:blur(12px);
+       padding:10px 22px; background:rgba(255,255,255,.97); backdrop-filter:blur(12px);
        border-top:1px solid var(--line); z-index:19}
   .bar-btn{flex:1; height:54px; border-radius:14px; border:0; background:var(--ink); color:#fff;
            font-family:inherit; font-size:16px; font-weight:650; cursor:pointer; letter-spacing:.01em;
@@ -112,7 +99,9 @@
         border:0; font-family:inherit; cursor:pointer}
   .chip.on{background:#e3eafd; color:var(--accent); font-weight:650}
   .rowbtns{display:flex; gap:10px; align-items:center; margin-top:20px}
-  .rowbtns .cta{margin-top:0}
+  .cta{height:54px; border-radius:14px; background:var(--ink); color:#fff; border:0; width:100%;
+       font-size:16px; font-weight:650; font-family:inherit; cursor:pointer}
+  .rowbtns .cta{flex:1}
   .del{background:none; border:0; color:#b42318; font-size:14.5px; font-family:inherit; font-weight:600;
        padding:12px 4px; cursor:pointer}
 
@@ -138,6 +127,8 @@
             padding:14px 15px; border:1px solid var(--line); border-radius:14px; background:#fff}
   .totalrow .k{font-size:13.5px; color:var(--body)}
   .totalrow .v{font-size:19px; font-weight:650; color:var(--ink); font-variant-numeric:tabular-nums}
+  .formsline{margin-top:10px; font-size:13px; color:var(--muted)}
+  .formsline b{color:var(--ink); font-weight:600}
 
   .monthbar{display:flex; align-items:center; justify-content:space-between; margin-top:14px}
   .monthbar b{font-size:19px; color:var(--ink)}
@@ -159,11 +150,11 @@
   .daypanel .h b{font-size:15px; color:var(--ink)}
   .daypanel .h span{font-size:13px; color:var(--muted)}
 
-  .srow{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:15px 0;
+  .srow{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 0;
         border-bottom:1px solid var(--line)}
   .srow .lab{font-size:15px; color:var(--ink); font-weight:550}
   .srow .sub{font-size:12.5px; color:var(--muted); margin-top:2px}
-  .srow input[type=number]{width:96px; text-align:right}
+  .srow input[type=number]{width:88px; text-align:right}
   .srow input[type=time]{width:146px; text-align:right}
   .switch{position:relative; width:48px; height:28px; border-radius:999px; background:#dbe3ef; border:0;
           cursor:pointer; transition:background .18s ease; flex:0 0 auto}
@@ -176,10 +167,16 @@
   .ghostbtn{border:1.5px solid var(--line); background:#fff; border-radius:12px; width:100%; padding:14px;
             font-size:15px; font-family:inherit; font-weight:600; color:var(--ink); margin-top:10px; cursor:pointer}
   .note{font-size:12.5px; color:#94a3b8; margin-top:14px; line-height:1.5}
-  .vhead{display:flex; align-items:center; gap:9px; margin-top:24px}
+  .vhead{display:flex; align-items:center; gap:9px; margin-top:22px}
   .vhead .swatch{width:10px; height:10px; border-radius:3px}
-  .vhead b{font-size:15px; color:var(--ink)}
-  .vhead .kick{font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:650}
+  .vhead b{font-size:15.5px; color:var(--ink)}
+  .vhead .kick{margin-left:auto; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+               color:var(--muted); font-weight:650}
+  .formrow{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f1f5f9}
+  .formrow .fname{flex:1; font-size:14.5px; color:var(--body)}
+  .formrow .fname span{display:block; font-size:11.5px; color:#9aa5b6; margin-top:1px}
+  .formrow input{width:74px !important; padding:8px 10px !important; font-size:14px !important}
+  .formrow .cur{font-size:12.5px; color:#9aa5b6}
 
   .intro{position:fixed; inset:0; background:#fff; z-index:50; display:flex; flex-direction:column;
          justify-content:space-between; padding:56px 28px 40px; max-width:430px; margin:0 auto}
@@ -205,12 +202,12 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v2</div>
-    <h1>Every cigarette, counted.</h1>
-    <p>One tap logs one. Numbers come back honest — no streaks to break, no lectures.</p>
+    <div class="kicker">Prototype · v3</div>
+    <h1>Smoke, drink, counted.</h1>
+    <p>One tap logs one. Forms are a detail you can add, not a step you must walk through.</p>
   </div>
   <div>
-    <p style="font-size:14px; color:var(--muted); margin:0 0 18px">Vaping is switched off by default. Turn it on in Settings to see how the app looks with two vices.</p>
+    <p style="font-size:14px; color:var(--muted); margin:0 0 18px">Caffeine and cannabis sit in Settings switched off — try turning one on to see the catalogue working.</p>
     <button class="cta" id="introGo">Start</button>
     <p class="foot" style="margin-top:18px">ViceMaxxing · a prototype, not the app</p>
   </div>
@@ -222,8 +219,8 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v2';
-  const TRIGGERS = ['Coffee','Stress','Social','After meal','Boredom','Other'];
+  const KEY = 'vicemaxxing.prototype.v3';
+  const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
   let seed = 20261021;
@@ -232,46 +229,52 @@
 
   const today = new Date(); today.setHours(0,0,0,0);
 
-  const VICE_DEFAULT = [
-    { id:'smoke', name:'Cigarettes', unit:'cigarette', plural:'cigarettes',
-      price:107, per:20, colour:'#1d4ed8', on:true },
-    { id:'vape', name:'Vaping', unit:'pod', plural:'pods',
-      price:55, per:1, colour:'#0f766e', on:false }
+  // A fixed catalogue. Every vice owns its forms, and every form owns its price basis.
+  const CATALOGUE = [
+    { id:'smoke', name:'Smoke', colour:'#1d4ed8', on:true, forms:[
+        { id:'cig',   name:'Cigarette', plural:'cigarettes', price:107, per:20 },
+        { id:'pod',   name:'Vape pod',  plural:'pods',       price:55,  per:1  },
+        { id:'pouch', name:'Pouch',     plural:'pouches',    price:68,  per:20 }
+      ]},
+    { id:'drink', name:'Drink', colour:'#b45309', on:true, forms:[
+        { id:'beer',   name:'Beer',   plural:'beers',   price:45, per:1 },
+        { id:'wine',   name:'Wine',   plural:'glasses', price:60, per:1 },
+        { id:'spirit', name:'Spirit', plural:'shots',   price:75, per:1 }
+      ]},
+    { id:'caffeine', name:'Caffeine', colour:'#0f766e', on:false, forms:[
+        { id:'coffee', name:'Coffee', plural:'coffees', price:38, per:1 }
+      ]},
+    { id:'cannabis', name:'Cannabis', colour:'#6d28d9', on:false, forms:[
+        { id:'joint', name:'Joint', plural:'joints', price:60, per:1 }
+      ]}
   ];
 
   function seedEvents(){
     const out = [];
     for (let back = 29; back >= 0; back--){
       const day = new Date(today.getTime() - back * DAY);
-      const maxHour = back === 0 ? Math.max(3, new Date().getHours()) : 23;
-
-      // cigarettes, every day
-      let count = 6 + Math.floor(rnd() * 6);
-      if (back === 0) count = Math.max(2, Math.round(maxHour / 3));
-      for (let i = 0; i < count; i++){
-        const hour = 7 + Math.floor((i / count) * 15) + Math.floor(rnd() * 2);
-        const d = new Date(day); d.setHours(Math.min(hour, maxHour), Math.floor(rnd() * 60), 0, 0);
+      const lastHour = back === 0 ? Math.max(3, new Date().getHours()) : 23;
+      const cCount = 6 + Math.floor(rnd() * 6);
+      for (let i = 0; i < cCount; i++){
+        const hour = 7 + Math.floor((i / cCount) * 15) + Math.floor(rnd() * 2);
+        const d = new Date(day); d.setHours(Math.min(hour, lastHour), Math.floor(rnd()*60), 0, 0);
         if (d > new Date()) continue;
-        out.push({ id:'s' + d.getTime() + i, viceId:'smoke', ts:d.toISOString(),
-                   craving:1 + Math.floor(rnd() * 5), trigger:pick(TRIGGERS), note:'' });
+        out.push({ id:'s'+d.getTime()+i, viceId:'smoke', formId: rnd() < .22 ? 'pod' : 'cig',
+                   ts:d.toISOString(), craving:1+Math.floor(rnd()*5), trigger:pick(TRIGGERS), note:'' });
       }
-
-      // vaping, only the last 9 days — looks like something you added recently
-      if (back <= 8){
-        const vcount = 1 + Math.floor(rnd() * 3);
-        for (let i = 0; i < vcount; i++){
-          const hour = 10 + Math.floor((i / Math.max(1, vcount)) * 12) + Math.floor(rnd() * 2);
-          const d = new Date(day); d.setHours(Math.min(hour, maxHour), Math.floor(rnd() * 60), 0, 0);
-          if (d > new Date()) continue;
-          out.push({ id:'v' + d.getTime() + i, viceId:'vape', ts:d.toISOString(),
-                     craving:1 + Math.floor(rnd() * 5), trigger:pick(['Boredom','Social','Stress','Other']), note:'' });
-        }
+      const weekend = [5,6,0].includes(new Date(day).getDay());
+      const dCount = weekend ? 1 + Math.floor(rnd()*4) : (rnd() < .45 ? 1 : 0);
+      for (let i = 0; i < dCount; i++){
+        const d = new Date(day); d.setHours(18 + Math.floor(rnd()*4), Math.floor(rnd()*60), 0, 0);
+        if (d > new Date()) continue;
+        out.push({ id:'d'+d.getTime()+i, viceId:'drink', formId: pick(['beer','beer','wine','spirit']),
+                   ts:d.toISOString(), craving:1+Math.floor(rnd()*5), trigger:pick(['Social','Stress','Habit']), note:'' });
       }
     }
     return out.sort((a,b) => new Date(a.ts) - new Date(b.ts));
   }
 
-  const fresh = () => ({ vices: JSON.parse(JSON.stringify(VICE_DEFAULT)), events: seedEvents(),
+  const fresh = () => ({ vices: JSON.parse(JSON.stringify(CATALOGUE)), events: seedEvents(),
                          reminder:true, reminderTime:'21:00', intro:false });
 
   let state;
@@ -282,11 +285,12 @@
   let tab = 'today', statsWindow = 7, filterVice = 'smoke';
   let calMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   let selectedDay = new Date(today);
-  let editing = null;
 
   const vice = id => state.vices.find(v => v.id === id) || state.vices[0];
+  const form = (v, id) => v.forms.find(f => f.id === id) || v.forms[0];
   const active = () => state.vices.filter(v => v.on);
-  const unitCost = v => v.price / v.per;
+  const cost = (v, f) => f.price / f.per;
+  const evCost = e => { const v = vice(e.viceId); return cost(v, form(v, e.formId)); };
   const money = n => 'HK$' + (n >= 100 ? Math.round(n) : n.toFixed(2));
   const hhmm = d => d.toTimeString().slice(0,5);
   const clock = () => new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -294,10 +298,17 @@
   const onDay = (d, vid) => state.events.filter(e => dayKey(e.ts) === dayKey(d) && (!vid || e.viceId === vid));
   const E = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-  function lastNDays(n){ const out = []; for (let i = n - 1; i >= 0; i--) out.push(new Date(today.getTime() - i * DAY)); return out; }
-  const dur = ms => { const h = Math.floor(ms/3600000), m = Math.round((ms%3600000)/60000); return h > 0 ? h + 'h ' + m + 'm' : m + 'm'; };
-  function longestGap(evs){ if (evs.length < 2) return 0; let max = 0;
-    for (let i = 1; i < evs.length; i++) max = Math.max(max, new Date(evs[i].ts) - new Date(evs[i-1].ts)); return max; }
+  function lastNDays(n){ const o=[]; for (let i=n-1;i>=0;i--) o.push(new Date(today.getTime()-i*DAY)); return o; }
+  const dur = ms => { const h=Math.floor(ms/3600000), m=Math.round((ms%3600000)/60000); return h>0 ? h+'h '+m+'m' : m+'m'; };
+  function longestGap(evs){ if (evs.length<2) return 0; let mx=0;
+    for (let i=1;i<evs.length;i++) mx=Math.max(mx, new Date(evs[i].ts)-new Date(evs[i-1].ts)); return mx; }
+
+  // "9 cigarettes · 3 pods"
+  function breakdown(v, evs){
+    const parts = v.forms.map(f => ({ f, n: evs.filter(e => e.formId === f.id).length })).filter(x => x.n > 0);
+    if (!parts.length) return '';
+    return parts.map(x => x.n + ' ' + (x.n === 1 ? x.f.name.toLowerCase() : x.f.plural)).join(' · ');
+  }
 
   /* ---------- today ---------- */
 
@@ -306,28 +317,31 @@
     const multi = act.length > 1;
     const allToday = onDay(new Date()).sort((a,b) => new Date(b.ts) - new Date(a.ts));
 
-    const hero = v => {
-      const n = onDay(new Date(), v.id).length;
+    const card = v => {
+      const evs = onDay(new Date(), v.id);
       const yes = onDay(new Date(Date.now() - DAY), v.id).length;
       const week = lastNDays(7).reduce((a,d) => a + onDay(d, v.id).length, 0) / 7;
-      const diff = n - yes;
+      const spendToday = evs.reduce((a,e) => a + evCost(e), 0);
+
       if (!multi){
+        const diff = evs.length - yes;
         return `
-          <div class="big">${n}</div>
-          <div class="unit">${v.plural}${v.per > 1 ? ' · HK$' + (n * unitCost(v)).toFixed(2) : ''}</div>
+          <div class="big">${evs.length}</div>
+          <div class="unit">${breakdown(v, evs) || 'nothing logged yet today'}</div>
           <div class="compare">
             <span>Yesterday <b>${yes}</b></span>
             <span>7-day avg <b>${week.toFixed(1)}</b></span>
-            <span><b>${diff === 0 ? '±0' : (diff > 0 ? '+' : '') + diff}</b> vs yesterday</span>
+            <span><b>${money(spendToday)}</b> today</span>
           </div>
-          <div style="font-size:13px; color:#94a3b8; margin-top:18px">Tap ⋯ below for time, craving and trigger.</div>`;
+          <div style="font-size:13px; color:#94a3b8; margin-top:18px">Tap ⋯ below for form, time, craving and trigger.</div>`;
       }
       return `
-        <button class="vcard" data-act="details" data-vice="${v.id}" style="text-align:left; width:100%; font-family:inherit; cursor:pointer">
+        <button class="vcard" data-act="details" data-vice="${v.id}">
           <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
             <span class="chev">details ›</span></div>
-          <div class="num">${n}</div>
-          <div class="sub">${v.plural} today · <b>${yes}</b> yesterday · avg <b>${week.toFixed(1)}</b></div>
+          <div class="num">${evs.length}</div>
+          <div class="sub">${breakdown(v, evs) || 'nothing yet'} · <b>${money(spendToday)}</b></div>
+          <div class="sub">${yes} yesterday · avg <b>${week.toFixed(1)}</b></div>
         </button>`;
     };
 
@@ -335,17 +349,16 @@
       <div class="status"><span>${clock()}</span><span>ViceMaxxing</span></div>
       <div class="eyebrow">Today</div>
       <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
-      ${multi ? `<div class="cards-v">${act.map(hero).join('')}</div>` : hero(act[0])}
-      <div class="listhead">Today${multi ? ' · both' : ''}</div>
+      ${multi ? `<div class="cards-v">${act.map(card).join('')}</div>` : card(act[0])}
+      <div class="listhead">Today</div>
       ${allToday.length ? allToday.map(e => {
-        const v = vice(e.viceId);
+        const v = vice(e.viceId), f = form(v, e.formId);
         return `<button class="entry" data-edit="${e.id}">
           <span class="t">${hhmm(new Date(e.ts))}</span>
-          ${multi ? `<span class="vd" style="background:${v.colour}"></span>` : ''}
-          <span class="tag">${multi ? E(v.name) + ' · ' : ''}${e.trigger ? E(e.trigger) : 'no trigger'}${e.craving ? ' · ' + e.craving + '/5' : ''}</span>
-          <span class="dot"></span>
+          <span class="vd" style="background:${v.colour}"></span>
+          <span class="tag">${E(f.name)}${e.trigger ? ' · ' + E(e.trigger) : ''}${e.craving ? ' · ' + e.craving + '/5' : ''}</span>
         </button>`;
-      }).join('') : `<div class="empty">Nothing logged yet today. One tap when you light up.</div>`}
+      }).join('') : `<div class="empty">Nothing logged yet today. One tap when you do.</div>`}
     `;
   }
 
@@ -354,48 +367,46 @@
   function screenHistory(){
     const v = vice(filterVice);
     const first = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
-    const days = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 0).getDate();
+    const daysIn = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 0).getDate();
     const lead = (first.getDay() + 6) % 7;
-    const counts = []; for (let d = 1; d <= days; d++) counts.push(onDay(new Date(first.getFullYear(), first.getMonth(), d), v.id).length);
+    const counts = []; for (let d=1; d<=daysIn; d++) counts.push(onDay(new Date(first.getFullYear(), first.getMonth(), d), v.id).length);
     const max = Math.max(3, ...counts);
-    const base = v.colour;
-    const shade = n => n === 0 ? '' : n/max < .35 ? '#eef1f6' : n/max < .6 ? '#dbe3ef' : n/max < .85 ? '#a9bbdd' : base;
+    const shade = n => n === 0 ? '' : n/max < .35 ? '#eef1f6' : n/max < .6 ? '#dbe3ef' : n/max < .85 ? '#a9bbdd' : v.colour;
     const inkFor = n => n/max >= .85 ? '#ffffff' : '#41506a';
 
     let cells = '';
-    for (let i = 0; i < lead; i++) cells += '<div class="cell mute"></div>';
-    for (let d = 1; d <= days; d++){
+    for (let i=0;i<lead;i++) cells += '<div class="cell mute"></div>';
+    for (let d=1; d<=daysIn; d++){
       const date = new Date(first.getFullYear(), first.getMonth(), d);
-      const n = counts[d-1];
-      const future = date > today;
-      const isToday = dayKey(date) === dayKey(today);
-      const sel = dayKey(date) === dayKey(selectedDay);
+      const n = counts[d-1], future = date > today;
+      const isToday = dayKey(date) === dayKey(today), sel = dayKey(date) === dayKey(selectedDay);
       const bg = (!future && n) ? shade(n) : '';
-      cells += `<button class="cell ${future ? 'mute' : ''} ${isToday ? 'today' : ''} ${sel && !isToday ? 'sel' : ''}"
-                  data-day="${d}" style="${bg ? `background:${bg};border-color:${bg};color:${inkFor(n)}` : ''}">${d}</button>`;
+      cells += `<button class="cell ${future?'mute':''} ${isToday?'today':''} ${sel && !isToday?'sel':''}"
+        data-day="${d}" style="${bg ? `background:${bg};border-color:${bg};color:${inkFor(n)}` : ''}">${d}</button>`;
     }
 
     const selEvents = onDay(selectedDay, v.id).sort((a,b) => new Date(b.ts) - new Date(a.ts));
+    const selSpend = selEvents.reduce((a,e) => a + evCost(e), 0);
 
     return `
       <div class="status"><span>${clock()}</span><span>History</span></div>
       <div class="eyebrow">History</div>
       ${state.vices.length > 1 ? `<div class="seg">${state.vices.map(x =>
-        `<button data-filter="${x.id}" class="${filterVice === x.id ? 'on' : ''}">${E(x.name)}</button>`).join('')}</div>` : ''}
+        `<button data-filter="${x.id}" class="${filterVice===x.id?'on':''}">${E(x.name)}</button>`).join('')}</div>` : ''}
       <div class="monthbar">
         <b>${calMonth.toLocaleDateString('en-GB',{month:'long', year:'numeric'})}</b>
         <div class="navbtns"><button data-month="-1">‹</button><button data-month="1">›</button></div>
       </div>
-      <div class="dow">${['M','T','W','T','F','S','S'].map(d => `<div>${d}</div>`).join('')}</div>
+      <div class="dow">${['M','T','W','T','F','S','S'].map(d=>`<div>${d}</div>`).join('')}</div>
       <div class="cal">${cells}</div>
       <div class="legend">Less<i style="background:#eef1f6"></i><i style="background:#dbe3ef"></i><i style="background:#a9bbdd"></i><i style="background:${v.colour}"></i>More</div>
       <div class="daypanel">
         <div class="h"><b>${selectedDay.toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'})}</b>
-          <span>${selEvents.length} ${selEvents.length === 1 ? v.unit : v.plural} · HK$${Math.round(selEvents.length * unitCost(v))}</span></div>
+          <span>${selEvents.length} · ${money(selSpend)}</span></div>
         ${selEvents.length ? selEvents.map(e => `<button class="entry" data-edit="${e.id}">
             <span class="t">${hhmm(new Date(e.ts))}</span>
-            <span class="tag">${e.trigger ? E(e.trigger) : 'no trigger'}${e.craving ? ' · ' + e.craving + '/5' : ''}</span>
-            <span class="dot"></span></button>`).join('') : `<div class="empty">Nothing logged.</div>`}
+            <span class="tag">${E(form(v, e.formId).name)}${e.trigger ? ' · ' + E(e.trigger) : ''}</span>
+          </button>`).join('') : `<div class="empty">Nothing logged.</div>`}
       </div>`;
   }
 
@@ -405,25 +416,24 @@
     const v = vice(filterVice);
     const days = lastNDays(statsWindow);
     const counts = days.map(d => onDay(d, v.id).length);
-    const total = counts.reduce((a,b) => a + b, 0);
-    const avg = total / statsWindow;
-    const prev = []; for (let i = statsWindow*2 - 1; i >= statsWindow; i--) prev.push(new Date(today.getTime() - i*DAY));
+    const avg = counts.reduce((a,b)=>a+b,0) / statsWindow;
+    const prev = []; for (let i=statsWindow*2-1; i>=statsWindow; i--) prev.push(new Date(today.getTime()-i*DAY));
     const prevAvg = prev.reduce((a,d) => a + onDay(d, v.id).length, 0) / statsWindow;
-    const deltaPct = prevAvg ? Math.round(((avg - prevAvg) / prevAvg) * 100) : 0;
+    const deltaPct = prevAvg ? Math.round(((avg-prevAvg)/prevAvg)*100) : 0;
     const max = Math.max(1, ...counts);
 
-    const range = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= days[0] && new Date(e.ts) < new Date(today.getTime() + DAY));
-    const byTrigger = {}; range.forEach(e => { const k = e.trigger || 'Untagged'; byTrigger[k] = (byTrigger[k]||0)+1; });
-    const trigRows = Object.entries(byTrigger).sort((a,b) => b[1]-a[1]).slice(0,4);
+    const range = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= days[0]);
+    const byTrigger = {}; range.forEach(e => { const k = e.trigger || 'Untagged'; byTrigger[k]=(byTrigger[k]||0)+1; });
+    const trigRows = Object.entries(byTrigger).sort((a,b)=>b[1]-a[1]).slice(0,4);
 
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthCount = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= monthStart).length;
-    const gap = longestGap([...range].sort((a,b) => new Date(a.ts) - new Date(b.ts)));
+    const monthEvs = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= monthStart);
+    const monthSpend = monthEvs.reduce((a,e) => a + evCost(e), 0);
+    const gap = longestGap([...range].sort((a,b)=>new Date(a.ts)-new Date(b.ts)));
 
-    const allMonth = state.vices.reduce((sum, x) => {
-      const c = state.events.filter(e => e.viceId === x.id && new Date(e.ts) >= monthStart).length;
-      return sum + c * unitCost(x);
-    }, 0);
+    const allMonth = state.vices.reduce((sum,x) => sum + state.events
+      .filter(e => e.viceId===x.id && new Date(e.ts) >= monthStart)
+      .reduce((a,e) => a + evCost(e), 0), 0);
 
     const label = d => statsWindow === 7 ? d.toLocaleDateString('en-GB',{weekday:'narrow'})
       : (d.getDate() % 5 === 0 || d.getDate() === 1 ? String(d.getDate()) : '');
@@ -432,64 +442,60 @@
       <div class="status"><span>${clock()}</span><span>Stats</span></div>
       <div class="eyebrow">Stats</div>
       ${state.vices.length > 1 ? `<div class="seg">${state.vices.map(x =>
-        `<button data-filter="${x.id}" class="${filterVice === x.id ? 'on' : ''}">${E(x.name)}</button>`).join('')}</div>` : ''}
+        `<button data-filter="${x.id}" class="${filterVice===x.id?'on':''}">${E(x.name)}</button>`).join('')}</div>` : ''}
       <div class="seg" style="margin-top:8px">
-        <button data-win="7" class="${statsWindow === 7 ? 'on' : ''}">7 days</button>
-        <button data-win="30" class="${statsWindow === 30 ? 'on' : ''}">30 days</button>
+        <button data-win="7" class="${statsWindow===7?'on':''}">7 days</button>
+        <button data-win="30" class="${statsWindow===30?'on':''}">30 days</button>
       </div>
-      <div class="hero-num"><b>${avg.toFixed(1)}</b><span>${v.plural} per day</span></div>
-      <div class="delta">${deltaPct === 0 ? 'Same as' : (deltaPct > 0 ? '+' : '') + deltaPct + '% vs'} the ${statsWindow} days before</div>
-      <div class="chart">${counts.map(c => `<div class="bar ${c >= avg ? 'hi' : ''}" style="height:${Math.round(c/max*100)}%;${c >= avg ? 'background:' + v.colour : ''}"></div>`).join('')}</div>
-      <div class="axis">${days.map(d => `<div>${label(d)}</div>`).join('')}</div>
+      <div class="hero-num"><b>${avg.toFixed(1)}</b><span>per day</span></div>
+      <div class="delta">${deltaPct===0?'Same as':(deltaPct>0?'+':'')+deltaPct+'% vs'} the ${statsWindow} days before</div>
+      <div class="chart">${counts.map(c => `<div class="bar" style="height:${Math.round(c/max*100)}%;${c>=avg?`background:${v.colour}`:''}"></div>`).join('')}</div>
+      <div class="axis">${days.map(d=>`<div>${label(d)}</div>`).join('')}</div>
       <div class="cards">
-        <div class="card"><div class="k">Spend</div><div class="v">${money(Math.round(monthCount * unitCost(v)))}</div><div class="s">${E(v.name)} this month</div></div>
-        <div class="card"><div class="k">Longest gap</div><div class="v">${gap ? dur(gap) : '—'}</div><div class="s">last ${statsWindow} days</div></div>
+        <div class="card"><div class="k">Spend</div><div class="v">${money(Math.round(monthSpend))}</div><div class="s">${E(v.name)} this month</div></div>
+        <div class="card"><div class="k">Longest gap</div><div class="v">${gap?dur(gap):'—'}</div><div class="s">last ${statsWindow} days</div></div>
       </div>
+      <div class="formsline">${breakdown(v, monthEvs).split(' · ').map(p=>p.replace(/^(\d+)/,'<b>$1</b>')).join(' · ') || 'No entries this month'}</div>
       ${active().length > 1 ? `<div class="totalrow"><span class="k">All vices, this month</span><span class="v">${money(Math.round(allMonth))}</span></div>` : ''}
-      <div class="listhead">By trigger${Object.keys(byTrigger).length > 4 ? ' · top 4 of ' + Object.keys(byTrigger).length : ''}</div>
+      <div class="listhead">By trigger${Object.keys(byTrigger).length>4?' · top 4 of '+Object.keys(byTrigger).length:''}</div>
       ${trigRows.length ? trigRows.map(([k,c]) => `<div class="entry" style="cursor:default">
           <span class="t" style="width:auto">${E(k)}</span>
-          <span class="tag">${Math.round(c / Math.max(1, range.length) * 100)}% · ${c}</span>
-          <span class="dot"></span></div>`).join('') : `<div class="empty">No entries in this window.</div>`}`;
+          <span class="tag">${Math.round(c/Math.max(1,range.length)*100)}% · ${c}</span></div>`).join('')
+        : `<div class="empty">No entries in this window.</div>`}`;
   }
 
   /* ---------- settings ---------- */
 
   function screenSettings(){
-    const viceRows = state.vices.map((v, i) => `
+    const viceBlock = v => `
       <div class="vhead"><span class="swatch" style="background:${v.colour}"></span><b>${E(v.name)}</b>
-        <span class="kick" style="margin-left:auto">${v.on ? 'shown in Today' : 'hidden'}</span></div>
+        <span class="kick">${v.on ? 'on Today' : 'hidden'}</span></div>
       <div class="srow">
-        <div><div class="lab">Show on Today</div><div class="sub">switch vices on and off</div></div>
-        <button class="switch ${v.on ? 'on' : ''}" data-vice-toggle="${v.id}"><i></i></button>
+        <div><div class="lab">Show on Today</div><div class="sub">${v.forms.length} form${v.forms.length>1?'s':''}: ${v.forms.map(f=>f.name.toLowerCase()).join(', ')}</div></div>
+        <button class="switch ${v.on?'on':''}" data-vice-toggle="${v.id}"><i></i></button>
       </div>
-      <div class="srow">
-        <div><div class="lab">Price per ${v.per > 1 ? 'pack' : v.unit}</div><div class="sub">${v.per > 1 ? v.per + ' ' + v.plural + ' in it' : 'one ' + v.unit}</div></div>
-        <input type="number" data-price="${v.id}" value="${v.price}" min="1" step="1" inputmode="numeric">
-      </div>
-      ${v.per > 1 ? `<div class="srow">
-        <div><div class="lab">${v.plural} per pack</div><div class="sub">used for every money figure</div></div>
-        <input type="number" data-per="${v.id}" value="${v.per}" min="1" step="1" inputmode="numeric">
-      </div>` : ''}
-      <div class="srow">
-        <div><div class="lab">Cost per ${v.unit}</div><div class="sub">what the stats use</div></div>
-        <div style="font-size:16px; color:var(--ink); font-weight:650">HK$${unitCost(v).toFixed(2)}</div>
-      </div>`).join('');
+      ${v.on ? v.forms.map(f => `
+        <div class="formrow">
+          <div class="fname">${E(f.name)}<span>${f.per > 1 ? f.per + ' per pack' : 'each'}</span></div>
+          <span class="cur">HK$</span>
+          <input type="number" data-price="${v.id}:${f.id}" value="${f.price}" min="0" step="1" inputmode="numeric">
+        </div>`).join('') : ''}`;
 
     return `
       <div class="status"><span>${clock()}</span><span>Settings</span></div>
       <div class="eyebrow">Settings</div>
-      <div class="date" style="margin-bottom:4px">Your numbers</div>
-      ${viceRows}
-      <div class="srow">
+      <div class="date" style="margin-bottom:2px">Vices</div>
+      <div class="note" style="margin-top:6px">Switch on what you want to track. Prices are per form, so a pack and a pod can cost different amounts.</div>
+      ${state.vices.map(viceBlock).join('')}
+      <div class="srow" style="margin-top:22px">
         <div><div class="lab">Daily reminder</div><div class="sub">a nudge, not a lecture</div></div>
-        <button class="switch ${state.reminder ? 'on' : ''}" id="reminder"><i></i></button>
+        <button class="switch ${state.reminder?'on':''}" id="reminder"><i></i></button>
       </div>
       ${state.reminder ? `<div class="srow"><div class="lab">Reminder time</div>
         <input type="time" id="rtime" value="${state.reminderTime}"></div>` : ''}
       <button class="ghostbtn" id="export">Export data</button>
       <button class="danger" id="wipe">Delete everything</button>
-      <p class="note">Prototype note: export downloads the JSON this screen has been building. In the real app it opens the Android share sheet.</p>`;
+      <p class="note">Prices are your own numbers, never shared. In the real app, export opens the Android share sheet.</p>`;
   }
 
   const SCREENS = { today: screenToday, history: screenHistory, stats: screenStats, settings: screenSettings };
@@ -503,16 +509,19 @@
   function renderBar(){
     const act = active();
     const multi = act.length > 1;
+    const bar = document.getElementById('bar');
+    bar.style.display = tab === 'settings' ? 'none' : 'flex';
     document.getElementById('bar').innerHTML =
-      act.map(v => `<button class="bar-btn" data-act="log" data-vice="${v.id}"><span class="plus">+</span>${multi ? v.unit.charAt(0).toUpperCase() + v.unit.slice(1) : 'Log one'}</button>`).join('')
-      + (multi ? '' : `<button class="bar-more" data-act="details" data-vice="${act[0].id}" aria-label="Log with details">⋯</button>`);
+      act.map(v => `<button class="bar-btn" data-act="log" data-vice="${v.id}"><span class="plus">+</span>${multi ? E(v.name) : 'Log one'}</button>`).join('')
+      + (multi ? '' : `<button class="bar-more" data-act="details" data-vice="${act[0].id}" aria-label="More detail">⋯</button>`);
   }
 
   function render(){
     document.getElementById('screen').innerHTML = `<div class="screen">${SCREENS[tab]()}</div>`;
+    document.querySelector('.screen').style.paddingBottom = tab === 'settings' ? '44px' : '168px';
     renderBar();
-    document.getElementById('tabs').innerHTML = TABS.map(([id,label,icon]) => `
-      <button class="tab ${tab === id ? 'on' : ''}" data-tab="${id}"><svg viewBox="0 0 24 24">${icon}</svg>${label}</button>`).join('');
+    document.getElementById('tabs').innerHTML = TABS.map(([id,label,icon]) =>
+      `<button class="tab ${tab===id?'on':''}" data-tab="${id}"><svg viewBox="0 0 24 24">${icon}</svg>${label}</button>`).join('');
     window.scrollTo(0,0);
   }
 
@@ -523,64 +532,78 @@
   }
 
   function addEvent(viceId, extra){
-    const now = new Date();
-    const ev = Object.assign({ id:'e' + Date.now() + Math.floor(Math.random()*1000), viceId,
-                               ts: now.toISOString(), craving:0, trigger:'', note:'' }, extra || {});
+    const v = vice(viceId);
+    const ev = Object.assign({ id:'e'+Date.now()+Math.floor(Math.random()*1000), viceId,
+      formId: v.forms[0].id, ts:new Date().toISOString(), craving:0, trigger:'', note:'' }, extra || {});
     state.events.push(ev); save(); render(); return ev;
   }
 
   function openSheet(ev, viceId){
-    editing = ev || null;
-    const v = vice(ev ? ev.viceId : viceId);
+    const v0 = vice(ev ? ev.viceId : viceId);
+    const f0 = form(v0, ev ? ev.formId : v0.forms[0].id);
     const d = ev ? new Date(ev.ts) : new Date();
+    let chosenVice = v0.id, chosenForm = f0.id, craving = ev ? ev.craving : 0, trigger = ev ? ev.trigger : '';
     const sheet = document.getElementById('sheet');
-    sheet.innerHTML = `
-      <div class="grab"></div>
-      <h3>${ev ? 'Edit' : 'Log a'} ${v.unit}</h3>
-      <div class="fieldlabel">Vice</div>
-      <div class="chips">${active().map(x => `<button class="chip ${x.id === v.id ? 'on' : ''}" data-svice="${x.id}">${E(x.name)}</button>`).join('')}</div>
-      <div class="fieldlabel">Time</div>
-      <input type="time" id="stime" value="${hhmm(d)}">
-      <div class="fieldlabel">Craving</div>
-      <div class="cravings">${[1,2,3,4,5].map(n => `<button class="cr ${ev && ev.craving === n ? 'on' : ''}" data-cr="${n}">${n}</button>`).join('')}</div>
-      <div class="fieldlabel">Trigger · optional</div>
-      <div class="chips">${TRIGGERS.map(t => `<button class="chip ${ev && ev.trigger === t ? 'on' : ''}" data-trig="${t}">${t}</button>`).join('')}</div>
-      <div class="rowbtns">
-        <button class="cta" id="ssave">Save</button>
-        ${ev ? '<button class="del" id="sdel">Delete</button>' : ''}
-      </div>`;
-    const toastEl = document.getElementById('toast'); toastEl.classList.remove('on');
+
+    const paint = () => {
+      const v = vice(chosenVice);
+      sheet.innerHTML = `
+        <div class="grab"></div>
+        <h3>${ev ? 'Edit' : 'Log'} ${E(form(v, chosenForm).name.toLowerCase())}</h3>
+        <div class="fieldlabel">Vice</div>
+        <div class="chips" id="vchips">${active().map(x =>
+          `<button class="chip ${x.id===chosenVice?'on':''}" data-svice="${x.id}">${E(x.name)}</button>`).join('')}</div>
+        <div class="fieldlabel">Form</div>
+        <div class="chips" id="fchips">${v.forms.map(f =>
+          `<button class="chip ${f.id===chosenForm?'on':''}" data-form="${f.id}">${E(f.name)}</button>`).join('')}</div>
+        <div class="fieldlabel">Time</div>
+        <input type="time" id="stime" value="${hhmm(d)}">
+        <div class="fieldlabel">Craving</div>
+        <div class="cravings" id="crav">${[1,2,3,4,5].map(n =>
+          `<button class="cr ${craving===n?'on':''}" data-cr="${n}">${n}</button>`).join('')}</div>
+        <div class="fieldlabel">Trigger · optional</div>
+        <div class="chips" id="tchips">${TRIGGERS.map(t =>
+          `<button class="chip ${trigger===t?'on':''}" data-trig="${t}">${E(t)}</button>`).join('')}</div>
+        <div class="rowbtns">
+          <button class="cta" id="ssave">Save</button>
+          ${ev ? '<button class="del" id="sdel">Delete</button>' : ''}
+        </div>`;
+
+      sheet.querySelectorAll('[data-svice]').forEach(b => b.onclick = () => {
+        chosenVice = b.dataset.svice;
+        chosenForm = vice(chosenVice).forms[0].id;
+        paint();
+      });
+      sheet.querySelectorAll('[data-form]').forEach(b => b.onclick = () => { chosenForm = b.dataset.form; paint(); });
+      sheet.querySelectorAll('[data-cr]').forEach(b => b.onclick = () => {
+        const n = +b.dataset.cr; craving = craving === n ? 0 : n;
+        sheet.querySelectorAll('[data-cr]').forEach(x => x.classList.toggle('on', +x.dataset.cr === craving));
+      });
+      sheet.querySelectorAll('[data-trig]').forEach(b => b.onclick = () => {
+        trigger = trigger === b.dataset.trig ? '' : b.dataset.trig;
+        sheet.querySelectorAll('[data-trig]').forEach(x => x.classList.toggle('on', x.dataset.trig === trigger));
+      });
+      document.getElementById('ssave').onclick = () => {
+        const [h,m] = document.getElementById('stime').value.split(':').map(Number);
+        const base = ev ? new Date(ev.ts) : new Date();
+        base.setHours(h || 0, m || 0, 0, 0);
+        if (ev){
+          Object.assign(ev, { ts: base.toISOString(), viceId: chosenVice, formId: chosenForm, craving, trigger });
+          save(); closeSheet(); render(); toast('Saved');
+        } else {
+          closeSheet(); addEvent(chosenVice, { formId: chosenForm, ts: base.toISOString(), craving, trigger });
+          toast(hhmm(base) + ' · ' + vice(chosenVice).name + ' · ' + form(vice(chosenVice), chosenForm).name);
+        }
+      };
+      const del = document.getElementById('sdel');
+      if (del) del.onclick = () => { state.events = state.events.filter(x => x.id !== ev.id);
+        save(); closeSheet(); render(); toast('Deleted'); };
+    };
+
+    document.getElementById('toast').classList.remove('on');
+    paint();
     sheet.classList.add('on');
     document.getElementById('veil').classList.add('on');
-
-    let craving = ev ? ev.craving : 0, trigger = ev ? ev.trigger : '', chosen = v.id;
-
-    sheet.querySelectorAll('[data-cr]').forEach(b => b.onclick = () => {
-      const n = +b.dataset.cr; craving = craving === n ? 0 : n;
-      sheet.querySelectorAll('[data-cr]').forEach(x => x.classList.toggle('on', +x.dataset.cr === craving));
-    });
-    sheet.querySelectorAll('[data-trig]').forEach(b => b.onclick = () => {
-      trigger = trigger === b.dataset.trig ? '' : b.dataset.trig;
-      sheet.querySelectorAll('[data-trig]').forEach(x => x.classList.toggle('on', x.dataset.trig === trigger));
-    });
-    sheet.querySelectorAll('[data-svice]').forEach(b => b.onclick = () => {
-      chosen = b.dataset.svice;
-      sheet.querySelectorAll('[data-svice]').forEach(x => x.classList.toggle('on', x.dataset.svice === chosen));
-      sheet.querySelector('h3').textContent = (ev ? 'Edit' : 'Log a') + ' ' + vice(chosen).unit;
-    });
-
-    document.getElementById('ssave').onclick = () => {
-      const [h,m] = document.getElementById('stime').value.split(':').map(Number);
-      const base = ev ? new Date(ev.ts) : new Date();
-      base.setHours(h || 0, m || 0, 0, 0);
-      if (ev){ ev.ts = base.toISOString(); ev.craving = craving; ev.trigger = trigger; ev.viceId = chosen;
-        save(); closeSheet(); render(); toast('Saved'); }
-      else { closeSheet(); addEvent(chosen, { ts: base.toISOString(), craving, trigger });
-        toast('Logged · ' + hhmm(base) + ' · ' + vice(chosen).name); }
-    };
-    const del = document.getElementById('sdel');
-    if (del) del.onclick = () => { state.events = state.events.filter(x => x.id !== ev.id);
-      save(); closeSheet(); render(); toast('Deleted'); };
   }
 
   function closeSheet(){
@@ -597,8 +620,11 @@
     const act = e.target.closest('[data-act]');
     if (act){
       const vid = act.dataset.vice || active()[0].id;
-      if (act.dataset.act === 'log'){ const ev = addEvent(vid); toast('Logged · ' + hhmm(new Date(ev.ts)) + ' · ' + vice(vid).name); }
-      if (act.dataset.act === 'details'){ openSheet(null, vid); }
+      if (act.dataset.act === 'log'){
+        const ev = addEvent(vid);
+        toast(hhmm(new Date(ev.ts)) + ' · ' + vice(vid).name + ' · ' + form(vice(vid), ev.formId).name);
+      }
+      if (act.dataset.act === 'details') openSheet(null, vid);
       return;
     }
 
@@ -612,18 +638,25 @@
     if (day){ selectedDay = new Date(calMonth.getFullYear(), calMonth.getMonth(), +day.dataset.day); render(); return; }
 
     const mon = e.target.closest('[data-month]');
-    if (mon){ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + +mon.dataset.month, 1); render(); return; }
+    if (mon){ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+ +mon.dataset.month, 1); render(); return; }
 
     const win = e.target.closest('[data-win]');
     if (win){ statsWindow = +win.dataset.win; render(); return; }
 
     const vt = e.target.closest('[data-vice-toggle]');
-    if (vt){ const v = vice(vt.dataset.viceToggle); v.on = !v.on; save(); render(); return; }
+    if (vt){
+      const v = vice(vt.dataset.viceToggle);
+      v.on = !v.on;
+      if (!active().length) v.on = true;          // never leave Today empty
+      if (!active().find(x => x.id === filterVice)) filterVice = active()[0].id;
+      save(); render(); return;
+    }
 
     if (e.target.id === 'reminder'){ state.reminder = !state.reminder; save(); render(); return; }
 
     if (e.target.id === 'export'){
-      const rows = state.events.map(x => ({ time:x.ts, vice: vice(x.viceId).name, craving:x.craving, trigger:x.trigger }));
+      const rows = state.events.map(x => ({ time:x.ts, vice: vice(x.viceId).name,
+        form: form(vice(x.viceId), x.formId).name, craving:x.craving, trigger:x.trigger }));
       const blob = new Blob([JSON.stringify(rows, null, 2)], {type:'application/json'});
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
       a.download = 'vicemaxxing-export.json'; a.click(); toast('Exported');
@@ -637,9 +670,11 @@
 
   document.addEventListener('change', e => {
     const pr = e.target.closest('[data-price]');
-    if (pr){ vice(pr.dataset.price).price = Math.max(1, +pr.value || 1); save(); render(); return; }
-    const pe = e.target.closest('[data-per]');
-    if (pe){ vice(pe.dataset.per).per = Math.max(1, +pe.value || 1); save(); render(); return; }
+    if (pr){
+      const [vid, fid] = pr.dataset.price.split(':');
+      const v = vice(vid); form(v, fid).price = Math.max(0, +pr.value || 0);
+      save(); render(); return;
+    }
     if (e.target.id === 'rtime'){ state.reminderTime = e.target.value; save(); }
   });
 
