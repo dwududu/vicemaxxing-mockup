@@ -31,6 +31,7 @@
   .compare{margin-top:14px; display:flex; gap:16px; flex-wrap:wrap; font-size:13.5px; color:var(--muted)}
   .compare b{color:var(--ink); font-weight:600}
 
+  /* two-vice cards */
   .cards-v{margin-top:18px; display:flex; flex-direction:column; gap:12px}
   .vcard{border:1px solid var(--line); border-radius:18px; padding:16px; background:#fff;
          text-align:left; width:100%; font-family:inherit; cursor:pointer}
@@ -43,6 +44,17 @@
               margin:10px 0 0; font-variant-numeric:tabular-nums}
   .vcard .sub{font-size:13px; color:var(--muted); margin-top:5px}
   .vcard .sub b{color:var(--ink); font-weight:600}
+
+  /* three-or-more compact rows */
+  .rows{margin-top:16px; border-top:1px solid var(--line)}
+  .vrow{display:flex; align-items:center; gap:12px; width:100%; padding:14px 0; border:0; border-bottom:1px solid var(--line);
+        background:none; font-family:inherit; text-align:left; cursor:pointer}
+  .vrow:active{background:var(--soft)}
+  .vrow .swatch{width:9px; height:9px; border-radius:3px; flex:0 0 auto}
+  .vrow .vmain{flex:1; min-width:0}
+  .vrow .vname{font-size:15px; font-weight:600; color:var(--ink)}
+  .vrow .vsub{font-size:12.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .vrow .vcount{font-size:26px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; letter-spacing:-.03em}
 
   .listhead{margin:26px 0 8px; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
             color:var(--muted); font-weight:650}
@@ -59,11 +71,13 @@
        bottom:calc(74px + env(safe-area-inset-bottom)); display:flex; gap:10px;
        padding:10px 22px; background:rgba(255,255,255,.97); backdrop-filter:blur(12px);
        border-top:1px solid var(--line); z-index:19}
-  .bar-btn{flex:1; height:54px; border-radius:14px; border:0; background:var(--ink); color:#fff;
+  #bar.grid{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .bar-btn{height:54px; border-radius:14px; border:0; background:var(--ink); color:#fff;
            font-family:inherit; font-size:16px; font-weight:650; cursor:pointer; letter-spacing:.01em;
            display:flex; align-items:center; justify-content:center; gap:7px}
+  #bar.grid .bar-btn{height:46px; font-size:14.5px}
   .bar-btn:active{transform:scale(.99); background:#1e293b}
-  .bar-btn .plus{font-size:19px; font-weight:500; opacity:.75; line-height:1}
+  .bar-btn .plus{font-size:18px; font-weight:500; opacity:.7; line-height:1}
   .bar-more{width:54px; height:54px; border-radius:14px; border:1.5px solid var(--line); background:#fff;
             color:var(--ink); font-size:20px; font-family:inherit; cursor:pointer; flex:0 0 auto; line-height:1}
   nav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:min(430px,100%);
@@ -84,7 +98,7 @@
   .grab{width:40px; height:4px; border-radius:2px; background:#dfe5ee; margin:0 auto 16px}
   .sheet h3{margin:0; font-size:21px; color:var(--ink); letter-spacing:-.01em}
   .fieldlabel{font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
-              font-weight:650; margin:20px 0 8px}
+              font-weight:650; margin:18px 0 8px}
   input[type=time], input[type=text], input[type=number]{
     font-family:inherit; font-size:15.5px; color:var(--ink); border:1.5px solid var(--line);
     border-radius:12px; padding:11px 13px; width:100%; background:#fff; outline:none}
@@ -105,15 +119,21 @@
   .del{background:none; border:0; color:#b42318; font-size:14.5px; font-family:inherit; font-weight:600;
        padding:12px 4px; cursor:pointer}
 
-  .seg{display:flex; background:#eef1f6; border-radius:11px; padding:3px; margin-top:12px; font-size:14px; font-weight:600}
-  .seg button{flex:1; border:0; background:none; font-family:inherit; font-size:13.5px; font-weight:600;
-              padding:8px 4px; border-radius:9px; color:#64748b; cursor:pointer; white-space:nowrap}
+  .segwrap{margin-top:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none}
+  .segwrap::-webkit-scrollbar{display:none}
+  .seg{display:flex; background:#eef1f6; border-radius:11px; padding:3px; font-size:14px; font-weight:600; gap:2px}
+  .seg button{flex:1; border:0; background:none; font-family:inherit; font-size:13px; font-weight:600;
+              padding:8px 10px; border-radius:9px; color:#64748b; cursor:pointer; white-space:nowrap}
   .seg button.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(15,23,42,.10)}
+  .seg2{display:flex; background:#eef1f6; border-radius:11px; padding:3px; margin-top:8px; font-size:14px; font-weight:600}
+  .seg2 button{flex:1; border:0; background:none; font-family:inherit; font-size:13.5px; font-weight:600;
+               padding:8px 4px; border-radius:9px; color:#64748b; cursor:pointer}
+  .seg2 button.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(15,23,42,.10)}
   .hero-num{margin-top:22px; display:flex; align-items:baseline; gap:9px}
   .hero-num b{font-size:54px; line-height:1; letter-spacing:-.035em; color:var(--ink); font-variant-numeric:tabular-nums}
   .hero-num span{font-size:14.5px; color:var(--muted)}
   .delta{margin-top:6px; font-size:13.5px; font-weight:600; color:var(--muted)}
-  .chart{margin-top:20px; height:140px; display:flex; align-items:flex-end; gap:5px}
+  .chart{margin-top:20px; height:130px; display:flex; align-items:flex-end; gap:5px}
   .bar{flex:1; background:#dbe3ef; border-radius:4px 4px 2px 2px; min-height:3px}
   .axis{margin-top:6px; display:flex; gap:5px; font-size:10px; color:#9aa5b6}
   .axis div{flex:1; text-align:center; overflow:hidden; white-space:nowrap}
@@ -154,7 +174,6 @@
         border-bottom:1px solid var(--line)}
   .srow .lab{font-size:15px; color:var(--ink); font-weight:550}
   .srow .sub{font-size:12.5px; color:var(--muted); margin-top:2px}
-  .srow input[type=number]{width:88px; text-align:right}
   .srow input[type=time]{width:146px; text-align:right}
   .switch{position:relative; width:48px; height:28px; border-radius:999px; background:#dbe3ef; border:0;
           cursor:pointer; transition:background .18s ease; flex:0 0 auto}
@@ -202,12 +221,12 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v3</div>
-    <h1>Smoke, drink, counted.</h1>
-    <p>One tap logs one. Forms are a detail you can add, not a step you must walk through.</p>
+    <div class="kicker">Prototype · v4</div>
+    <h1>Four vices, counted.</h1>
+    <p>One tap logs one. Forms are a detail you can add, never a step you must walk through.</p>
   </div>
   <div>
-    <p style="font-size:14px; color:var(--muted); margin:0 0 18px">Caffeine and cannabis sit in Settings switched off — try turning one on to see the catalogue working.</p>
+    <p style="font-size:14px; color:var(--muted); margin:0 0 18px">Smoke, alcohol, fap, soda — you can switch any of them off in Settings.</p>
     <button class="cta" id="introGo">Start</button>
     <p class="foot" style="margin-top:18px">ViceMaxxing · a prototype, not the app</p>
   </div>
@@ -219,33 +238,35 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v3';
+  const KEY = 'vicemaxxing.prototype.v4';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
-  let seed = 20261021;
+  let seed = 20261022;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
   const pick = a => a[Math.floor(rnd() * a.length)];
 
   const today = new Date(); today.setHours(0,0,0,0);
 
-  // A fixed catalogue. Every vice owns its forms, and every form owns its price basis.
+  // Fixed catalogue. A vice owns its forms; a form owns its price basis.
+  // price 0 means "no money attached" and every money figure for it is hidden.
   const CATALOGUE = [
     { id:'smoke', name:'Smoke', colour:'#1d4ed8', on:true, forms:[
         { id:'cig',   name:'Cigarette', plural:'cigarettes', price:107, per:20 },
         { id:'pod',   name:'Vape pod',  plural:'pods',       price:55,  per:1  },
         { id:'pouch', name:'Pouch',     plural:'pouches',    price:68,  per:20 }
       ]},
-    { id:'drink', name:'Drink', colour:'#b45309', on:true, forms:[
+    { id:'alcohol', name:'Alcohol', colour:'#b45309', on:true, forms:[
         { id:'beer',   name:'Beer',   plural:'beers',   price:45, per:1 },
         { id:'wine',   name:'Wine',   plural:'glasses', price:60, per:1 },
         { id:'spirit', name:'Spirit', plural:'shots',   price:75, per:1 }
       ]},
-    { id:'caffeine', name:'Caffeine', colour:'#0f766e', on:false, forms:[
-        { id:'coffee', name:'Coffee', plural:'coffees', price:38, per:1 }
+    { id:'fap', name:'Fap', colour:'#6d28d9', on:true, forms:[
+        { id:'session', name:'Session', plural:'sessions', price:0, per:1 }
       ]},
-    { id:'cannabis', name:'Cannabis', colour:'#6d28d9', on:false, forms:[
-        { id:'joint', name:'Joint', plural:'joints', price:60, per:1 }
+    { id:'soda', name:'Soda', colour:'#0f766e', on:true, forms:[
+        { id:'can',    name:'Can',    plural:'cans',    price:9,  per:1 },
+        { id:'bottle', name:'Bottle', plural:'bottles', price:15, per:1 }
       ]}
   ];
 
@@ -253,28 +274,45 @@
     const out = [];
     for (let back = 29; back >= 0; back--){
       const day = new Date(today.getTime() - back * DAY);
-      const lastHour = back === 0 ? Math.max(3, new Date().getHours()) : 23;
-      const cCount = back === 0 ? 4 + Math.floor(rnd() * 3) : 6 + Math.floor(rnd() * 6);
-      for (let i = 0; i < cCount; i++){
-        let d;
-        if (back === 0){
-          // spread today's entries over the hours already lived, so the demo looks real at any time of day
-          d = new Date(Date.now() - (i * 52 + 18 + Math.floor(rnd() * 25)) * 60000);
-        } else {
-          const hour = 7 + Math.floor((i / cCount) * 15) + Math.floor(rnd() * 2);
-          d = new Date(day); d.setHours(Math.min(hour, lastHour), Math.floor(rnd()*60), 0, 0);
+      const lastHour = back === 0 ? 23 : 23;
+      const push = (viceId, formId, d, trig) => {
+        if (d > new Date()) return;
+        out.push({ id: viceId[0] + d.getTime() + Math.floor(rnd()*1000), viceId, formId, ts: d.toISOString(),
+                   craving: 1 + Math.floor(rnd()*5), trigger: trig || pick(TRIGGERS), note:'' });
+      };
+
+      if (back === 0){
+        // today: spread over the hours already lived so it looks real at any time
+        const n = 3 + Math.floor(rnd()*3);
+        for (let i = 0; i < n; i++){
+          const d = new Date(Date.now() - (i*58 + 15 + Math.floor(rnd()*30)) * 60000);
+          push('smoke', rnd() < .2 ? 'pod' : 'cig', d);
         }
-        if (d > new Date()) continue;
-        out.push({ id:'s'+d.getTime()+i, viceId:'smoke', formId: rnd() < .22 ? 'pod' : 'cig',
-                   ts:d.toISOString(), craving:1+Math.floor(rnd()*5), trigger:pick(TRIGGERS), note:'' });
-      }
-      const weekend = [5,6,0].includes(new Date(day).getDay());
-      const dCount = weekend ? 1 + Math.floor(rnd()*4) : (rnd() < .45 ? 1 : 0);
-      for (let i = 0; i < dCount; i++){
-        const d = new Date(day); d.setHours(18 + Math.floor(rnd()*4), Math.floor(rnd()*60), 0, 0);
-        if (d > new Date()) continue;
-        out.push({ id:'d'+d.getTime()+i, viceId:'drink', formId: pick(['beer','beer','wine','spirit']),
-                   ts:d.toISOString(), craving:1+Math.floor(rnd()*5), trigger:pick(['Social','Stress','Habit']), note:'' });
+        if (rnd() < .6) push('fap', 'session', new Date(Date.now() - 3*3600000));
+        const s = 1 + Math.floor(rnd()*2);
+        for (let i = 0; i < s; i++) push('soda', rnd() < .75 ? 'can' : 'bottle', new Date(Date.now() - (i*3+1)*3600000));
+        if (rnd() < .4) push('alcohol', pick(['beer','wine']), new Date(Date.now() - 5*3600000), 'Social');
+      } else {
+        const c = 6 + Math.floor(rnd()*6);
+        for (let i = 0; i < c; i++){
+          const hour = 7 + Math.floor((i/c)*15) + Math.floor(rnd()*2);
+          const d = new Date(day); d.setHours(Math.min(hour, lastHour), Math.floor(rnd()*60), 0, 0);
+          push('smoke', rnd() < .22 ? 'pod' : 'cig', d);
+        }
+        if (rnd() < .55) for (let i = 0, k = 1 + Math.floor(rnd()*2); i < k; i++){
+          const d = new Date(day); d.setHours(11 + Math.floor(rnd()*9), Math.floor(rnd()*60), 0, 0);
+          push('soda', rnd() < .8 ? 'can' : 'bottle', d);
+        }
+        if (rnd() < .7){
+          const d = new Date(day); d.setHours(21 + Math.floor(rnd()*2), Math.floor(rnd()*60), 0, 0);
+          push('fap', 'session', d, 'Habit');
+        }
+        const weekend = [5,6,0].includes(new Date(day).getDay());
+        const drinks = weekend ? 1 + Math.floor(rnd()*4) : (rnd() < .35 ? 1 : 0);
+        for (let i = 0; i < drinks; i++){
+          const d = new Date(day); d.setHours(18 + Math.floor(rnd()*4), Math.floor(rnd()*60), 0, 0);
+          push('alcohol', pick(['beer','beer','wine','spirit']), d, pick(['Social','Stress','Habit']));
+        }
       }
     }
     return out.sort((a,b) => new Date(a.ts) - new Date(b.ts));
@@ -286,6 +324,7 @@
   let state;
   try { state = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ state = fresh(); }
   if (!state.events || !state.vices) state = fresh();
+  if (state.vices.length !== 4 || state.vices[2].id !== 'fap') state = fresh();  // catalogue changed
   const save = () => localStorage.setItem(KEY, JSON.stringify(state));
 
   let tab = 'today', statsWindow = 7, filterVice = 'smoke';
@@ -295,8 +334,9 @@
   const vice = id => state.vices.find(v => v.id === id) || state.vices[0];
   const form = (v, id) => v.forms.find(f => f.id === id) || v.forms[0];
   const active = () => state.vices.filter(v => v.on);
-  const cost = (v, f) => f.price / f.per;
-  const evCost = e => { const v = vice(e.viceId); return cost(v, form(v, e.formId)); };
+  const cost = f => f.price / f.per;
+  const hasPrice = v => v.forms.some(f => f.price > 0);
+  const evCost = e => { const v = vice(e.viceId); return hasPrice(v) ? cost(form(v, e.formId)) : 0; };
   const money = n => 'HK$' + (n >= 100 ? Math.round(n) : n.toFixed(2));
   const hhmm = d => d.toTimeString().slice(0,5);
   const clock = () => new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -309,7 +349,6 @@
   function longestGap(evs){ if (evs.length<2) return 0; let mx=0;
     for (let i=1;i<evs.length;i++) mx=Math.max(mx, new Date(evs[i].ts)-new Date(evs[i-1].ts)); return mx; }
 
-  // "9 cigarettes · 3 pods"
   function breakdown(v, evs){
     const parts = v.forms.map(f => ({ f, n: evs.filter(e => e.formId === f.id).length })).filter(x => x.n > 0);
     if (!parts.length) return '';
@@ -320,34 +359,52 @@
 
   function screenToday(){
     const act = active();
-    const multi = act.length > 1;
+    const mode = act.length >= 3 ? 'rows' : (act.length === 2 ? 'cards' : 'hero');
     const allToday = onDay(new Date()).sort((a,b) => new Date(b.ts) - new Date(a.ts));
+
+    const spendOf = (v, evs) => evs.reduce((a,e) => a + evCost(e), 0);
+    const moneyBit = (v, evs) => hasPrice(v) ? ` · <b>${money(spendOf(v, evs))}</b>` : '';
+
+    const hero = v => {
+      const evs = onDay(new Date(), v.id);
+      const yes = onDay(new Date(Date.now() - DAY), v.id).length;
+      const week = lastNDays(7).reduce((a,d) => a + onDay(d, v.id).length, 0) / 7;
+      return `
+        <div class="big">${evs.length}</div>
+        <div class="unit">${breakdown(v, evs) || 'nothing logged yet today'}</div>
+        <div class="compare">
+          <span>Yesterday <b>${yes}</b></span>
+          <span>7-day avg <b>${week.toFixed(1)}</b></span>
+          ${hasPrice(v) ? `<span><b>${money(spendOf(v, evs))}</b> today</span>` : ''}
+        </div>
+        <div style="font-size:13px; color:#94a3b8; margin-top:18px">Tap ⋯ below for form, time, craving and trigger.</div>`;
+    };
 
     const card = v => {
       const evs = onDay(new Date(), v.id);
       const yes = onDay(new Date(Date.now() - DAY), v.id).length;
       const week = lastNDays(7).reduce((a,d) => a + onDay(d, v.id).length, 0) / 7;
-      const spendToday = evs.reduce((a,e) => a + evCost(e), 0);
-
-      if (!multi){
-        const diff = evs.length - yes;
-        return `
-          <div class="big">${evs.length}</div>
-          <div class="unit">${breakdown(v, evs) || 'nothing logged yet today'}</div>
-          <div class="compare">
-            <span>Yesterday <b>${yes}</b></span>
-            <span>7-day avg <b>${week.toFixed(1)}</b></span>
-            <span><b>${money(spendToday)}</b> today</span>
-          </div>
-          <div style="font-size:13px; color:#94a3b8; margin-top:18px">Tap ⋯ below for form, time, craving and trigger.</div>`;
-      }
       return `
         <button class="vcard" data-act="details" data-vice="${v.id}">
           <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
             <span class="chev">details ›</span></div>
           <div class="num">${evs.length}</div>
-          <div class="sub">${breakdown(v, evs) || 'nothing yet'} · <b>${money(spendToday)}</b></div>
+          <div class="sub">${breakdown(v, evs) || 'nothing yet'}${moneyBit(v, evs)}</div>
           <div class="sub">${yes} yesterday · avg <b>${week.toFixed(1)}</b></div>
+        </button>`;
+    };
+
+    const row = v => {
+      const evs = onDay(new Date(), v.id);
+      const yes = onDay(new Date(Date.now() - DAY), v.id).length;
+      return `
+        <button class="vrow" data-act="details" data-vice="${v.id}">
+          <span class="swatch" style="background:${v.colour}"></span>
+          <span class="vmain">
+            <span class="vname">${E(v.name)}</span>
+            <span class="vsub">${breakdown(v, evs) || 'nothing yet'} · ${yes} yesterday${moneyBit(v, evs)}</span>
+          </span>
+          <span class="vcount">${evs.length}</span>
         </button>`;
     };
 
@@ -355,14 +412,16 @@
       <div class="status"><span>${clock()}</span><span>ViceMaxxing</span></div>
       <div class="eyebrow">Today</div>
       <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
-      ${multi ? `<div class="cards-v">${act.map(card).join('')}</div>` : card(act[0])}
+      ${mode === 'hero' ? hero(act[0]) : mode === 'cards'
+        ? `<div class="cards-v">${act.map(card).join('')}</div>`
+        : `<div class="rows">${act.map(row).join('')}</div>`}
       <div class="listhead">Today</div>
       ${allToday.length ? allToday.map(e => {
         const v = vice(e.viceId), f = form(v, e.formId);
         return `<button class="entry" data-edit="${e.id}">
           <span class="t">${hhmm(new Date(e.ts))}</span>
           <span class="vd" style="background:${v.colour}"></span>
-          <span class="tag">${E(f.name)}${e.trigger ? ' · ' + E(e.trigger) : ''}${e.craving ? ' · ' + e.craving + '/5' : ''}</span>
+          <span class="tag">${mode === 'rows' ? E(v.name) + ' · ' : ''}${E(f.name)}${e.trigger ? ' · ' + E(e.trigger) : ''}${e.craving ? ' · ' + e.craving + '/5' : ''}</span>
         </button>`;
       }).join('') : `<div class="empty">Nothing logged yet today. One tap when you do.</div>`}
     `;
@@ -397,8 +456,8 @@
     return `
       <div class="status"><span>${clock()}</span><span>History</span></div>
       <div class="eyebrow">History</div>
-      ${state.vices.length > 1 ? `<div class="seg">${state.vices.map(x =>
-        `<button data-filter="${x.id}" class="${filterVice===x.id?'on':''}">${E(x.name)}</button>`).join('')}</div>` : ''}
+      <div class="segwrap"><div class="seg">${state.vices.map(x =>
+        `<button data-filter="${x.id}" class="${filterVice===x.id?'on':''}">${E(x.name)}</button>`).join('')}</div></div>
       <div class="monthbar">
         <b>${calMonth.toLocaleDateString('en-GB',{month:'long', year:'numeric'})}</b>
         <div class="navbtns"><button data-month="-1">‹</button><button data-month="1">›</button></div>
@@ -408,7 +467,7 @@
       <div class="legend">Less<i style="background:#eef1f6"></i><i style="background:#dbe3ef"></i><i style="background:#a9bbdd"></i><i style="background:${v.colour}"></i>More</div>
       <div class="daypanel">
         <div class="h"><b>${selectedDay.toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'})}</b>
-          <span>${selEvents.length} · ${money(selSpend)}</span></div>
+          <span>${selEvents.length}${hasPrice(v) ? ' · ' + money(selSpend) : ''}</span></div>
         ${selEvents.length ? selEvents.map(e => `<button class="entry" data-edit="${e.id}">
             <span class="t">${hhmm(new Date(e.ts))}</span>
             <span class="tag">${E(form(v, e.formId).name)}${e.trigger ? ' · ' + E(e.trigger) : ''}</span>
@@ -447,9 +506,9 @@
     return `
       <div class="status"><span>${clock()}</span><span>Stats</span></div>
       <div class="eyebrow">Stats</div>
-      ${state.vices.length > 1 ? `<div class="seg">${state.vices.map(x =>
-        `<button data-filter="${x.id}" class="${filterVice===x.id?'on':''}">${E(x.name)}</button>`).join('')}</div>` : ''}
-      <div class="seg" style="margin-top:8px">
+      <div class="segwrap"><div class="seg">${state.vices.map(x =>
+        `<button data-filter="${x.id}" class="${filterVice===x.id?'on':''}">${E(x.name)}</button>`).join('')}</div></div>
+      <div class="seg2">
         <button data-win="7" class="${statsWindow===7?'on':''}">7 days</button>
         <button data-win="30" class="${statsWindow===30?'on':''}">30 days</button>
       </div>
@@ -458,7 +517,7 @@
       <div class="chart">${counts.map(c => `<div class="bar" style="height:${Math.round(c/max*100)}%;${c>=avg?`background:${v.colour}`:''}"></div>`).join('')}</div>
       <div class="axis">${days.map(d=>`<div>${label(d)}</div>`).join('')}</div>
       <div class="cards">
-        <div class="card"><div class="k">Spend</div><div class="v">${money(Math.round(monthSpend))}</div><div class="s">${E(v.name)} this month</div></div>
+        ${hasPrice(v) ? `<div class="card"><div class="k">Spend</div><div class="v">${money(Math.round(monthSpend))}</div><div class="s">${E(v.name)} this month</div></div>` : ''}
         <div class="card"><div class="k">Longest gap</div><div class="v">${gap?dur(gap):'—'}</div><div class="s">last ${statsWindow} days</div></div>
       </div>
       <div class="formsline">${breakdown(v, monthEvs).split(' · ').map(p=>p.replace(/^(\d+)/,'<b>$1</b>')).join(' · ') || 'No entries this month'}</div>
@@ -482,7 +541,7 @@
       </div>
       ${v.on ? v.forms.map(f => `
         <div class="formrow">
-          <div class="fname">${E(f.name)}<span>${f.per > 1 ? f.per + ' per pack' : 'each'}</span></div>
+          <div class="fname">${E(f.name)}<span>${f.price > 0 ? (f.per > 1 ? f.per + ' per pack' : 'each') : 'no cost attached'}</span></div>
           <span class="cur">HK$</span>
           <input type="number" data-price="${v.id}:${f.id}" value="${f.price}" min="0" step="1" inputmode="numeric">
         </div>`).join('') : ''}`;
@@ -491,7 +550,7 @@
       <div class="status"><span>${clock()}</span><span>Settings</span></div>
       <div class="eyebrow">Settings</div>
       <div class="date" style="margin-bottom:2px">Vices</div>
-      <div class="note" style="margin-top:6px">Switch on what you want to track. Prices are per form, so a pack and a pod can cost different amounts.</div>
+      <div class="note" style="margin-top:6px">Switch on what you want to track. Prices are per form, so a pack, a pod and a can can all cost different amounts. A price of zero hides every money figure for that vice.</div>
       ${state.vices.map(viceBlock).join('')}
       <div class="srow" style="margin-top:22px">
         <div><div class="lab">Daily reminder</div><div class="sub">a nudge, not a lecture</div></div>
@@ -501,7 +560,7 @@
         <input type="time" id="rtime" value="${state.reminderTime}"></div>` : ''}
       <button class="ghostbtn" id="export">Export data</button>
       <button class="danger" id="wipe">Delete everything</button>
-      <p class="note">Prices are your own numbers, never shared. In the real app, export opens the Android share sheet.</p>`;
+      <p class="note">Everything stays on this device. In the real app, export opens the Android share sheet.</p>`;
   }
 
   const SCREENS = { today: screenToday, history: screenHistory, stats: screenStats, settings: screenSettings };
@@ -514,17 +573,20 @@
 
   function renderBar(){
     const act = active();
-    const multi = act.length > 1;
+    const grid = act.length >= 3;
     const bar = document.getElementById('bar');
-    bar.style.display = tab === 'settings' ? 'none' : 'flex';
-    document.getElementById('bar').innerHTML =
-      act.map(v => `<button class="bar-btn" data-act="log" data-vice="${v.id}"><span class="plus">+</span>${multi ? E(v.name) : 'Log one'}</button>`).join('')
-      + (multi ? '' : `<button class="bar-more" data-act="details" data-vice="${act[0].id}" aria-label="More detail">⋯</button>`);
+    bar.classList.toggle('grid', grid);
+    bar.style.display = tab === 'settings' ? 'none' : (grid ? 'grid' : 'flex');
+    bar.innerHTML =
+      act.map(v => `<button class="bar-btn" data-act="log" data-vice="${v.id}"><span class="plus">+</span>${act.length === 1 ? 'Log one' : E(v.name)}</button>`).join('')
+      + (act.length === 1 ? `<button class="bar-more" data-act="details" data-vice="${act[0].id}" aria-label="More detail">⋯</button>` : '');
   }
 
   function render(){
     document.getElementById('screen').innerHTML = `<div class="screen">${SCREENS[tab]()}</div>`;
-    document.querySelector('.screen').style.paddingBottom = tab === 'settings' ? '44px' : '168px';
+    const act = active();
+    document.querySelector('.screen').style.paddingBottom =
+      tab === 'settings' ? '44px' : (act.length >= 3 ? '232px' : '168px');
     renderBar();
     document.getElementById('tabs').innerHTML = TABS.map(([id,label,icon]) =>
       `<button class="tab ${tab===id?'on':''}" data-tab="${id}"><svg viewBox="0 0 24 24">${icon}</svg>${label}</button>`).join('');
@@ -557,18 +619,18 @@
         <div class="grab"></div>
         <h3>${ev ? 'Edit' : 'Log'} ${E(form(v, chosenForm).name.toLowerCase())}</h3>
         <div class="fieldlabel">Vice</div>
-        <div class="chips" id="vchips">${active().map(x =>
+        <div class="chips">${active().map(x =>
           `<button class="chip ${x.id===chosenVice?'on':''}" data-svice="${x.id}">${E(x.name)}</button>`).join('')}</div>
-        <div class="fieldlabel">Form</div>
-        <div class="chips" id="fchips">${v.forms.map(f =>
-          `<button class="chip ${f.id===chosenForm?'on':''}" data-form="${f.id}">${E(f.name)}</button>`).join('')}</div>
+        ${v.forms.length > 1 ? `<div class="fieldlabel">Form</div>
+        <div class="chips">${v.forms.map(f =>
+          `<button class="chip ${f.id===chosenForm?'on':''}" data-form="${f.id}">${E(f.name)}</button>`).join('')}</div>` : ''}
         <div class="fieldlabel">Time</div>
         <input type="time" id="stime" value="${hhmm(d)}">
         <div class="fieldlabel">Craving</div>
-        <div class="cravings" id="crav">${[1,2,3,4,5].map(n =>
+        <div class="cravings">${[1,2,3,4,5].map(n =>
           `<button class="cr ${craving===n?'on':''}" data-cr="${n}">${n}</button>`).join('')}</div>
         <div class="fieldlabel">Trigger · optional</div>
-        <div class="chips" id="tchips">${TRIGGERS.map(t =>
+        <div class="chips">${TRIGGERS.map(t =>
           `<button class="chip ${trigger===t?'on':''}" data-trig="${t}">${E(t)}</button>`).join('')}</div>
         <div class="rowbtns">
           <button class="cta" id="ssave">Save</button>
@@ -576,9 +638,7 @@
         </div>`;
 
       sheet.querySelectorAll('[data-svice]').forEach(b => b.onclick = () => {
-        chosenVice = b.dataset.svice;
-        chosenForm = vice(chosenVice).forms[0].id;
-        paint();
+        chosenVice = b.dataset.svice; chosenForm = vice(chosenVice).forms[0].id; paint();
       });
       sheet.querySelectorAll('[data-form]').forEach(b => b.onclick = () => { chosenForm = b.dataset.form; paint(); });
       sheet.querySelectorAll('[data-cr]').forEach(b => b.onclick = () => {
@@ -653,7 +713,7 @@
     if (vt){
       const v = vice(vt.dataset.viceToggle);
       v.on = !v.on;
-      if (!active().length) v.on = true;          // never leave Today empty
+      if (!active().length) v.on = true;
       if (!active().find(x => x.id === filterVice)) filterVice = active()[0].id;
       save(); render(); return;
     }
@@ -678,7 +738,7 @@
     const pr = e.target.closest('[data-price]');
     if (pr){
       const [vid, fid] = pr.dataset.price.split(':');
-      const v = vice(vid); form(v, fid).price = Math.max(0, +pr.value || 0);
+      form(vice(vid), fid).price = Math.max(0, +pr.value || 0);
       save(); render(); return;
     }
     if (e.target.id === 'rtime'){ state.reminderTime = e.target.value; save(); }
