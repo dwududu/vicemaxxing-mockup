@@ -342,6 +342,10 @@
   .formrow .fname span{display:block; font-size:11.5px; color:#9aa5b6; margin-top:1px}
   .formrow input{width:74px !important; padding:8px 10px !important; font-size:14px !important}
   .formrow .cur{font-size:12.5px; color:#9aa5b6}
+  .attrrow{display:flex; gap:12px; padding:0 0 10px; border-bottom:1px solid #f4f7fb}
+  .attrrow label{flex:1; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted)}
+  .attrrow input{width:60px !important; padding:6px 8px !important; font-size:13px !important}
+  .attrrow em{font-style:normal; color:#b6c0cd; font-size:10.5px}
 
   .intro{position:fixed; inset:0; background:#fff; z-index:50; display:flex; flex-direction:column;
          justify-content:space-between; padding:56px 28px 40px; max-width:430px; margin:0 auto}
@@ -391,7 +395,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v13</div>
+    <div class="kicker">Prototype · v14</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -417,7 +421,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v13';
+  const KEY = 'vicemaxxing.prototype.v14';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -431,26 +435,33 @@
   // price 0 means "no money attached" and every money figure for it is hidden.
   const CATALOGUE = [
     { id:'smoke', name:'Smoke', colour:'#1d4ed8', on:true, forms:[
-        { id:'cig',   name:'Cigarette', plural:'cigarettes', price:107, per:20 },
-        { id:'pod',   name:'Vape pod',  plural:'pods',       price:55,  per:1  },
-        { id:'pouch', name:'Pouch',     plural:'pouches',    price:68,  per:20 }
+        { id:'cig',   name:'Cigarette', plural:'cigarettes', price:107, per:20,
+          attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:0.8 }, { k:'tar', label:'Tar', unit:'mg', v:10 }] },
+        { id:'pod',   name:'Vape pod',  plural:'pods',       price:55,  per:1,
+          attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:20 },  { k:'tar', label:'Tar', unit:'mg', v:0 }] },
+        { id:'pouch', name:'Pouch',     plural:'pouches',    price:68,  per:20,
+          attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:8 },   { k:'tar', label:'Tar', unit:'mg', v:0 }] }
       ]},
     { id:'alcohol', name:'Alcohol', colour:'#b45309', on:true, forms:[
-        { id:'beer',   name:'Beer',   plural:'beers',   price:45, per:1 },
-        { id:'wine',   name:'Wine',   plural:'glasses', price:60, per:1 },
-        { id:'spirit', name:'Spirit', plural:'shots',   price:75, per:1 }
+        { id:'beer',   name:'Beer',   plural:'beers',   price:45, per:1,
+          attrs:[{ k:'alc', label:'Alcohol', unit:'units', v:1.7 }, { k:'cal', label:'Calories', unit:'kcal', v:140 }] },
+        { id:'wine',   name:'Wine',   plural:'glasses', price:60, per:1,
+          attrs:[{ k:'alc', label:'Alcohol', unit:'units', v:1.7 }, { k:'cal', label:'Calories', unit:'kcal', v:130 }] },
+        { id:'spirit', name:'Spirit', plural:'shots',   price:75, per:1,
+          attrs:[{ k:'alc', label:'Alcohol', unit:'units', v:1.0 }, { k:'cal', label:'Calories', unit:'kcal', v:60 }] }
       ]},
     { id:'fap', name:'Fap', colour:'#6d28d9', on:true, forms:[
-        { id:'session', name:'Session', plural:'sessions', price:0, per:1 }
+        { id:'session', name:'Session', plural:'sessions', price:0, per:1, attrs:[] }
       ]},
     { id:'soda', name:'Soda', colour:'#0f766e', on:true, forms:[
-        { id:'can',    name:'Can',    plural:'cans',    price:9,  per:1 },
-        { id:'bottle', name:'Bottle', plural:'bottles', price:15, per:1 }
+        { id:'can',    name:'Can',    plural:'cans',    price:9,  per:1,
+          attrs:[{ k:'sug', label:'Sugar', unit:'g', v:39 }, { k:'cal', label:'Calories', unit:'kcal', v:139 }] },
+        { id:'bottle', name:'Bottle', plural:'bottles', price:15, per:1,
+          attrs:[{ k:'sug', label:'Sugar', unit:'g', v:108 }, { k:'cal', label:'Calories', unit:'kcal', v:630 }] }
       ]}
   ];
 
   // A day runs from one wake-up to the next, so an all-nighter stays one day.
-  // With no wake logged, fall back to a 04:00 boundary.
   const DAY_START_HOUR = 4;
   const nightTime = (dateKey, woke) => {
     const [h, m] = String(woke || '07:00').split(':').map(Number);
@@ -543,7 +554,7 @@
   let state;
   try { state = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ state = fresh(); }
   if (!state.events || !state.vices) state = fresh();
-  if (state.vices.length !== 4 || state.vices[2].id !== 'fap') state = fresh();  // catalogue changed
+  if (state.vices.length !== 4 || state.vices[2].id !== 'fap' || !state.vices[0].forms[0].attrs) state = fresh();  // catalogue changed
   const save = () => localStorage.setItem(KEY, JSON.stringify(state));
 
   let tab = 'today', statsWindow = 7, filterVice = 'smoke';
@@ -603,6 +614,17 @@
     }
     return n;
   };
+
+  const attrTotals = (v, evs) => {
+    const out = {};
+    v.forms.forEach(f => (f.attrs || []).forEach(a => { out[a.k] = { label:a.label, unit:a.unit, v:0 }; }));
+    evs.forEach(e => {
+      const f = form(v, e.formId);
+      (f.attrs || []).forEach(a => { if (out[a.k]) out[a.k].v += a.v; });
+    });
+    return Object.entries(out).map(([k,o]) => ({ k, ...o })).filter(a => a.v > 0);
+  };
+  const fmtAttr = a => (a.v >= 10 ? Math.round(a.v) : Math.round(a.v * 10) / 10) + a.unit;
 
   const nightFor = (d) => state.nights[ymd(d || new Date())] || null;
 
@@ -749,6 +771,7 @@
                 <div class="mrow"><span>5-day</span><b>${ma(v,5).toFixed(1)}</b></div>
                 <div class="mrow"><span>Average</span><b>${week.toFixed(1)}</b></div>
                 <div class="mrow"><span>Last</span><b>${last}</b></div>
+                ${attrTotals(v, evs).map(a => `<div class="mrow"><span>${a.label} today</span><b>${fmtAttr(a)}</b></div>`).join('')}
               </div>
             </div>
           </div>
@@ -876,6 +899,8 @@
         <div class="card"><div class="k">Longest gap</div><div class="v">${gap?dur(gap):'—'}</div><div class="s">last ${statsWindow} days</div></div>
       </div>
       ${streakFor(v) >= 2 ? `<div class="formsline">Clean streak · <b>${streakFor(v)} days</b> with nothing logged</div>` : ''}
+      ${(() => { const t = attrTotals(v, monthEvs); return t.length
+          ? `<div class="formsline">${t.map(a => a.label + ' <b>' + fmtAttr(a) + '</b>').join(' · ')} this month</div>` : ''; })()}
       <div class="formsline">${breakdown(v, monthEvs).split(' · ').map(p=>p.replace(/^(\d+)/,'<b>$1</b>')).join(' · ') || 'No entries this month'}</div>
       ${active().length > 1 ? `<div class="totalrow"><span class="k">All vices, this month</span><span class="v">${money(Math.round(allMonth))}</span></div>` : ''}
       ${(() => {
@@ -906,7 +931,12 @@
           <div class="fname">${E(f.name)}<span>${f.price > 0 ? (f.per > 1 ? f.per + ' per pack' : 'each') : 'no cost attached'}</span></div>
           <span class="cur">HK$</span>
           <input type="number" data-price="${v.id}:${f.id}" value="${f.price}" min="0" step="1" inputmode="numeric">
-        </div>`).join('') : ''}`;
+        </div>
+        ${(f.attrs || []).length ? `<div class="attrrow">${f.attrs.map(a => `
+          <label>${a.label}
+            <input type="number" data-attr="${v.id}:${f.id}:${a.k}" value="${a.v}" min="0" step="0.1" inputmode="decimal">
+            <em>${a.unit}</em>
+          </label>`).join('')}</div>` : ''}`).join('') : ''}`;
 
     return `
       <div class="status"><span>${clock()}</span><span>Settings</span></div>
