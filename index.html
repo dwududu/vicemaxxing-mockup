@@ -60,7 +60,7 @@
   .tile .top{display:flex; align-items:center; gap:7px}
   .tile .swatch{width:8px; height:8px; border-radius:3px}
   .tile .nm{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:650}
-  .tile .sub{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.35}
+  .tile .sub{font-size:11.5px; color:var(--muted); margin-top:4px; line-height:1.35}
   .tile .tnum{font-size:46px; font-weight:700; color:var(--ink); letter-spacing:-.04em; line-height:1;
               margin-top:10px; font-variant-numeric:tabular-nums}
   .tile .hold{margin-left:auto; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:#b6c0cd}
@@ -94,6 +94,32 @@
   .vrow .vsub{font-size:12.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
   .vrow .vcount{font-size:26px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; letter-spacing:-.03em}
 
+
+
+  /* sleep row */
+  .sleeprow{display:flex; align-items:center; gap:10px; width:100%; margin-top:14px; padding:12px 14px;
+            border:1px solid var(--line); border-radius:14px; background:#fff; font-family:inherit;
+            font-size:13.5px; color:var(--body); cursor:pointer; text-align:left}
+  .sleeprow:active{background:var(--soft)}
+  .sleeprow .moon{width:26px; height:26px; border-radius:50%; background:#eef2f8; display:grid; place-items:center;
+                  font-size:13px; flex:0 0 auto}
+  .sleeprow .stxt{flex:1}
+  .sleeprow .stxt b{color:var(--ink); font-weight:650}
+  .sleeprow .schev{color:#a9b4c4; font-size:16px}
+  textarea{font-family:inherit; font-size:15px; color:var(--ink); border:1.5px solid var(--line); border-radius:12px;
+           padding:11px 13px; width:100%; min-height:76px; resize:none; outline:none}
+
+  /* one-off coach mark */
+  .coach{position:fixed; inset:0; z-index:60; display:none}
+  .coach.on{display:block}
+  .coach-hole{position:absolute; border-radius:22px; box-shadow:0 0 0 9999px rgba(15,23,42,.55);
+              transition:all .18s ease; pointer-events:none}
+  .coach-bubble{position:absolute; left:22px; right:22px; background:#fff; border-radius:16px; padding:16px 16px 14px;
+                box-shadow:0 12px 30px rgba(15,23,42,.24)}
+  .coach-bubble b{display:block; font-size:16px; color:var(--ink); margin-bottom:6px}
+  .coach-bubble p{margin:0 0 12px; font-size:13.5px; color:var(--muted); line-height:1.45}
+  .coach-bubble button{width:100%; height:44px; border:0; border-radius:12px; background:var(--ink); color:#fff;
+                       font-family:inherit; font-size:15px; font-weight:650; cursor:pointer}
 
   /* day timeline */
   .tl{position:relative; margin-top:10px; border:1px solid var(--line); border-radius:16px; padding:12px 12px 8px; background:#fff}
@@ -275,14 +301,23 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v7</div>
-    <h1>Tap to add. Hold to look closer.</h1>
-    <p>The tile is the button. A short press adds one, a long press opens form, craving and trigger.</p>
+    <div class="kicker">Prototype · v8</div>
+    <h1>Count it. Then count your sleep.</h1>
+    <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
   <div>
     <p style="font-size:14px; color:var(--muted); margin:0 0 18px">Smoke, alcohol, fap, soda — switch any of them off in Settings.</p>
     <button class="cta" id="introGo">Start</button>
     <p class="foot" style="margin-top:18px">ViceMaxxing · a prototype, not the app</p>
+  </div>
+</div>
+
+<div class="coach" id="coach">
+  <div class="coach-hole" id="coachHole"></div>
+  <div class="coach-bubble" id="coachBubble">
+    <b>Tap to add one. Hold to look closer.</b>
+    <p>A short press logs one. Press and hold the tile to pick the form, set a craving, or note a trigger.</p>
+    <button id="coachOk">Got it</button>
   </div>
 </div>
 
@@ -292,7 +327,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v7';
+  const KEY = 'vicemaxxing.prototype.v8';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -323,6 +358,12 @@
         { id:'bottle', name:'Bottle', plural:'bottles', price:15, per:1 }
       ]}
   ];
+
+  // a night out past midnight still belongs to the day you woke up on
+  const DAY_START_HOUR = 4;
+  const dayKey = d => { const x = new Date(d); x.setHours(x.getHours() - DAY_START_HOUR); x.setHours(0,0,0,0); return x.getTime(); };
+  const dayStart = d => new Date(dayKey(d || new Date()));
+  const minsOfDay = d => { const x = new Date(d); return x.getHours()*60 + x.getMinutes(); };
 
   function seedEvents(){
     const out = [];
@@ -373,7 +414,19 @@
   }
 
   const fresh = () => ({ vices: JSON.parse(JSON.stringify(CATALOGUE)), events: seedEvents(),
-                         reminder:true, reminderTime:'21:00', intro:false });
+                         nights: seedNights(), reminder:true, reminderTime:'21:00', intro:false, coach:false });
+
+  function seedNights(){
+    const out = {};
+    for (let back = 13; back >= 0; back--){
+      const d = new Date(today.getTime() - back * DAY); d.setHours(8,0,0,0);
+      const key = String(dayKey(d));
+      const wake = 6*60 + Math.floor(rnd()*110);            // 06:00 – 07:50
+      out[key] = { woke: String(Math.floor(wake/60)).padStart(2,'0') + ':' + String(wake%60).padStart(2,'0'),
+                   quality: 2 + Math.floor(rnd()*4), notes: '' };
+    }
+    return out;
+  }
 
   let state;
   try { state = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ state = fresh(); }
@@ -394,7 +447,6 @@
   const money = n => 'HK$' + (n >= 100 ? Math.round(n) : n.toFixed(2));
   const hhmm = d => d.toTimeString().slice(0,5);
   const clock = () => new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  const dayKey = d => { const x = new Date(d); x.setHours(0,0,0,0); return x.getTime(); };
   const onDay = (d, vid) => state.events.filter(e => dayKey(e.ts) === dayKey(d) && (!vid || e.viceId === vid));
   const E = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -409,6 +461,18 @@
     return parts.map(x => x.n + ' ' + (x.n === 1 ? x.f.name.toLowerCase() : x.f.plural)).join(' · ');
   }
 
+  const nightFor = (d) => state.nights[String(dayKey(d || new Date()))] || null;
+
+  const sleepRow = () => {
+    const n = nightFor(new Date());
+    const txt = n
+      ? `Woke <b>${n.woke}</b> · sleep <b>${n.quality}/5</b>${n.notes ? ' · ' + E(n.notes.slice(0, 26)) : ''}`
+      : 'Last night · tap to log sleep';
+    return `<button class="sleeprow" id="sleepRow">
+      <span class="moon">☾</span><span class="stxt">${txt}</span><span class="schev">›</span>
+    </button>`;
+  };
+
   /* ---------- today ---------- */
 
   function screenToday(){
@@ -418,13 +482,14 @@
 
     // window starts three hours before the first entry of the day, not at midnight
     function windowFor(){
-      const mins = d => { const x = new Date(d); return x.getHours()*60 + x.getMinutes(); };
+      const mins = minsOfDay;
       const nowMin = mins(new Date());
+      const floor = DAY_START_HOUR * 60;
       if (!todayEvs.length){
-        return { from: Math.max(0, Math.min(nowMin, 480) - 60), to: Math.min(1440, nowMin + 60) };
+        return { from: Math.max(floor, nowMin - 90), to: Math.min(1440, nowMin + 30) };
       }
       const times = todayEvs.map(e => mins(e.ts));
-      const from = Math.max(0, Math.min(...times) - 180);
+      const from = Math.max(floor, Math.min(...times) - 45);
       const to = Math.min(1440, Math.max(nowMin, ...times) + 30);
       return { from, to };
     }
@@ -470,14 +535,17 @@
 
     const tile = v => {
       const evs = onDay(new Date(), v.id);
-      const yes = onDay(new Date(Date.now() - DAY), v.id).length;
-      const head = hasPrice(v) ? money(spendOf(v, evs)) + ' today' : 'no cost';
+      const yes = onDay(dayStart(new Date(Date.now() - DAY)), v.id).length;
+      const week = lastNDays(7).reduce((a,d) => a + onDay(d, v.id).length, 0) / 7;
+      const last = evs.length ? evs[evs.length-1].ts : null;
+      const sinceLast = last ? (Date.now() - new Date(last).getTime()) : 0;
+      const head = hasPrice(v) ? money(spendOf(v, evs)) : 'no cost';
       return `
         <div class="tile" data-vice="${v.id}">
           <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
             <span class="hold">hold</span></div>
           <div class="tnum">${evs.length}</div>
-          <div class="sub">${head}<br>${yes} yesterday</div>
+          <div class="sub">${head} · ${yes} yest<br>avg <b>${week.toFixed(1)}</b>${last ? ' · last ' + hhmm(new Date(last)) : ''}</div>
         </div>`;
     };
 
@@ -490,7 +558,8 @@
         <div class="status"><span>${clock()}</span><span>ViceMaxxing</span></div>
         <div class="eyebrow">Today</div>
         <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
-        <div class="tiles two" style="margin-top:18px">
+        ${sleepRow()}
+        <div class="tiles two" style="margin-top:14px">
           <div class="tile" data-vice="${v.id}" style="min-height:210px">
             <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
               <span class="hold">hold for details</span></div>
@@ -507,7 +576,8 @@
       <div class="status"><span>${clock()}</span><span>ViceMaxxing</span></div>
       <div class="eyebrow">Today</div>
       <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
-      <div class="tiles ${act.length === 2 ? 'two' : 'many'}">${act.map(tile).join('')}</div>
+      ${sleepRow()}
+      <div class="tiles ${act.length === 2 ? 'two' : 'many'}" style="margin-top:14px">${act.map(tile).join('')}</div>
       <div class="listhead">Today · tap to add one, hold for details</div>
       ${timeline()}
     `;
@@ -608,6 +678,12 @@
       </div>
       <div class="formsline">${breakdown(v, monthEvs).split(' · ').map(p=>p.replace(/^(\d+)/,'<b>$1</b>')).join(' · ') || 'No entries this month'}</div>
       ${active().length > 1 ? `<div class="totalrow"><span class="k">All vices, this month</span><span class="v">${money(Math.round(allMonth))}</span></div>` : ''}
+      ${(() => {
+        const ns = lastNDays(statsWindow).map(d => nightFor(d)).filter(Boolean);
+        if (!ns.length) return '';
+        const q = ns.reduce((a,n) => a + (n.quality||0), 0) / ns.length;
+        return `<div class="formsline">Sleep · ${ns.length} night${ns.length>1?'s':''} logged · avg quality <b>${q.toFixed(1)}/5</b></div>`;
+      })()}
       <div class="listhead">By trigger${Object.keys(byTrigger).length>4?' · top 4 of '+Object.keys(byTrigger).length:''}</div>
       ${trigRows.length ? trigRows.map(([k,c]) => `<div class="entry" style="cursor:default">
           <span class="t" style="width:auto">${E(k)}</span>
@@ -752,6 +828,36 @@
     document.getElementById('veil').classList.add('on');
   }
 
+  function openSleepSheet(){
+    const key = String(dayKey(new Date()));
+    const n = state.nights[key] || { woke:'07:30', quality:0, notes:'' };
+    let quality = n.quality || 0;
+    const sheet = document.getElementById('sheet');
+    sheet.innerHTML = `
+      <div class="grab"></div>
+      <h3>Last night</h3>
+      <div class="fieldlabel">Woke up</div>
+      <input type="time" id="woke" value="${n.woke}">
+      <div class="fieldlabel">Sleep quality</div>
+      <div class="cravings">${[1,2,3,4,5].map(q =>
+        `<button class="cr ${quality===q?'on':''}" data-q="${q}">${q}</button>`).join('')}</div>
+      <div class="fieldlabel">Notes · optional</div>
+      <textarea id="notes" placeholder="Woke at 3, couldn't get back to sleep…">${E(n.notes || '')}</textarea>
+      <div class="rowbtns"><button class="cta" id="saveSleep">Save</button></div>`;
+    sheet.querySelectorAll('[data-q]').forEach(b => b.onclick = () => {
+      quality = +b.dataset.q;
+      sheet.querySelectorAll('[data-q]').forEach(x => x.classList.toggle('on', +x.dataset.q === quality));
+    });
+    document.getElementById('saveSleep').onclick = () => {
+      state.nights[key] = { woke: document.getElementById('woke').value || '07:30',
+                            quality, notes: document.getElementById('notes').value.trim() };
+      save(); closeSheet(); render(); toast('Last night saved');
+    };
+    document.getElementById('toast').classList.remove('on');
+    sheet.classList.add('on');
+    document.getElementById('veil').classList.add('on');
+  }
+
   function closeSheet(){
     document.getElementById('sheet').classList.remove('on');
     document.getElementById('veil').classList.remove('on');
@@ -847,6 +953,8 @@
       save(); render(); return;
     }
 
+    if (e.target.closest('#sleepRow')){ openSleepSheet(); return; }
+
     if (e.target.id === 'reminder'){ state.reminder = !state.reminder; save(); render(); return; }
 
     if (e.target.id === 'export'){
@@ -873,10 +981,34 @@
     if (e.target.id === 'rtime'){ state.reminderTime = e.target.value; save(); }
   });
 
+  function showCoach(){
+    const tile = document.querySelector('.tile');
+    if (!tile) return;
+    const r = tile.getBoundingClientRect();
+    const hole = document.getElementById('coachHole');
+    hole.style.left = (r.left - 5) + 'px';
+    hole.style.top = (r.top - 5) + 'px';
+    hole.style.width = (r.width + 10) + 'px';
+    hole.style.height = (r.height + 10) + 'px';
+    const bubble = document.getElementById('coachBubble');
+    const below = r.bottom + 16;
+    bubble.style.top = (below + 168 < window.innerHeight ? below : Math.max(70, r.top - 186)) + 'px';
+    document.getElementById('coach').classList.add('on');
+  }
+
+  document.getElementById('coachOk').onclick = () => {
+    state.coach = true; save();
+    document.getElementById('coach').classList.remove('on');
+  };
+
   document.getElementById('introGo').onclick = () => {
     document.getElementById('intro').classList.add('hidden'); state.intro = true; save();
+    if (!state.coach) setTimeout(showCoach, 250);
   };
-  if (state.intro) document.getElementById('intro').classList.add('hidden');
+  if (state.intro) {
+    document.getElementById('intro').classList.add('hidden');
+    if (!state.coach) setTimeout(showCoach, 350);
+  }
   render();
 })();
 </script>
