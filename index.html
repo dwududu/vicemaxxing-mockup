@@ -48,7 +48,8 @@
 
   .tile{position:relative; overflow:hidden}
   .tile.streaked{background:#f5f8fb; border-color:#e4ebf3}
-  .tile.streaked .under .tnumrow, .tile.streaked .under .sub{opacity:0}
+  .tile.streaked .under .mid{opacity:0}
+  .tile.streaked .under .sub{opacity:0}
   .tile .over{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
               justify-content:center; gap:1px; pointer-events:none}
   .tile .over .snum{font-size:56px; font-weight:800; color:var(--ink); letter-spacing:-.05em; line-height:1;
@@ -80,6 +81,11 @@
   .tile .tnum{font-size:46px; font-weight:700; color:var(--ink); letter-spacing:-.04em; line-height:1;
               margin-top:10px; font-variant-numeric:tabular-nums}
   .tnumrow{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px}
+  .tile .under{display:flex; flex-direction:column; height:100%}
+  .tile .mid{flex:1 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center;
+             justify-content:center; gap:5px}
+  .tile .mid .tnum{margin:0; text-align:center}
+  .tile .sub{text-align:center}
   .streak{font-size:9.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#0f7a52;
           background:#e6f4ec; border-radius:999px; padding:5px 9px; white-space:nowrap}
   .streak.long{background:#d6efdf}
@@ -677,11 +683,11 @@
         </div>` : '';
       return `
         <div class="tile ${streak >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
-          <div class="under" style="display:flex; flex-direction:column; justify-content:space-between; height:100%">
+          <div class="under">
             <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
               <span class="hold">hold</span></div>
-            <div class="tnumrow">
-              <div class="tnum" style="margin-top:0">${evs.length}</div>
+            <div class="mid">
+              <div class="tnum">${evs.length}</div>
               <span class="dchip ${dcls}">${dtxt}</span>
             </div>
             <div class="sub">${head} · ${yes} yest<br>5d <b>${ma(v,5).toFixed(1)}</b> ${trendHTML(v)} · avg <b>${week.toFixed(1)}</b></div>
@@ -1072,6 +1078,10 @@
     tile.classList.remove('pressing');
     if (longFired){ longFired = false; return; }
     if (Math.abs(e.clientX - px) > 12 || Math.abs(e.clientY - py) > 12) return;
+    if (tile.classList.contains('streaked')){
+      toast('Hold to log · this one has a streak');
+      return;
+    }
     const ev = addEvent(tile.dataset.vice);
     toast(hhmm(new Date(ev.ts)) + ' · ' + vice(tile.dataset.vice).name);
   });
