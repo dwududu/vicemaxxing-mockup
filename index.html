@@ -278,7 +278,7 @@
   .cell.sel{box-shadow:inset 0 0 0 2px var(--ink)}
   .legend{display:flex; align-items:center; gap:6px; margin-top:16px; font-size:11px; color:#9aa5b6}
   .legend i{width:13px; height:13px; border-radius:4px; display:block}
-  .daypanel{margin-top:18px; border-top:1px solid var(--line); padding-top:12px}
+  .daypanel{flex:1 1 auto; min-height:0; overflow-y:auto; margin-top:14px; border-top:1px solid var(--line); padding-top:10px}
   .daypanel .h{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px}
   .daypanel .h b{font-size:15px; color:var(--ink)}
   .daypanel .h span{font-size:13px; color:var(--muted)}
@@ -322,6 +322,25 @@
          font-size:14px; padding:11px 18px; border-radius:999px; opacity:0; transition:all .2s ease;
          pointer-events:none; z-index:40; white-space:nowrap}
   #toast.on{opacity:1; transform:translate(-50%,0)}
+
+  /* ---- one screen, no page scroll ---- */
+  #app{height:100dvh; display:flex; flex-direction:column; overflow:hidden}
+  #screen{flex:1 1 auto; min-height:0; overflow:hidden; display:flex}
+  .screen{flex:1 1 auto; min-height:0; overflow:hidden; display:flex; flex-direction:column; padding:6px 22px 8px}
+  .screen.scroll{overflow-y:auto; -webkit-overflow-scrolling:touch}
+  nav{position:static; transform:none; width:100%; height:74px; flex:0 0 auto;
+      border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom)}
+  .tiles{flex:0 1 auto}
+  .tlwrap{flex:1 1 auto; min-height:0; display:flex; flex-direction:column}
+  .tl{flex:1 1 auto; min-height:0; overflow:hidden; margin-top:8px; display:flex; flex-direction:column; justify-content:center}
+  .panel-scroll{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px}
+  .cal{flex:0 0 auto}
+  .cell{aspect-ratio:auto; height:38px}
+  .chart{height:96px}
+  .cards{margin-top:14px}
+  .hero-num{margin-top:14px}
+  .hero-num b{font-size:44px}
+  .segwrap, .seg, .seg2{flex:0 0 auto}
 </style>
 </head>
 <body>
@@ -502,10 +521,13 @@
   const money = n => 'HK$' + (n >= 100 ? Math.round(n) : n.toFixed(2));
   const hhmm = d => d.toTimeString().slice(0,5);
   const clock = () => new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  // Today follows the waking day; History, Stats and every average use a plain 24h calendar day
+  const calKey = d => { const x = new Date(d); x.setHours(0,0,0,0); return x.getTime(); };
   const onDay = (d, vid) => state.events.filter(e => dayKey(e.ts) === dayKey(noon(d)) && (!vid || e.viceId === vid));
+  const onCal = (d, vid) => state.events.filter(e => calKey(e.ts) === calKey(d) && (!vid || e.viceId === vid));
   const E = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-  function lastNDays(n){ const o=[]; for (let i=n-1;i>=0;i--) o.push(noon(new Date(today.getTime()-i*DAY))); return o; }
+  function lastNDays(n){ const o=[]; for (let i=n-1;i>=0;i--) o.push(new Date(today.getTime()-i*DAY)); return o; }
   const dur = ms => { const h=Math.floor(ms/3600000), m=Math.round((ms%3600000)/60000); return h>0 ? h+'h '+m+'m' : m+'m'; };
   function longestGap(evs){ if (evs.length<2) return 0; let mx=0;
     for (let i=1;i<evs.length;i++) mx=Math.max(mx, new Date(evs[i].ts)-new Date(evs[i-1].ts)); return mx; }
@@ -516,9 +538,9 @@
     return parts.map(x => x.n + ' ' + (x.n === 1 ? x.f.name.toLowerCase() : x.f.plural)).join(' · ');
   }
 
-  const ma = (v, days) => lastNDays(days).reduce((a,d) => a + onDay(d, v.id).length, 0) / days;
+  const ma = (v, days) => lastNDays(days).reduce((a,d) => a + onCal(d, v.id).length, 0) / days;
   const trendOf = v => {
-    const a = ma(v, 5), b = lastNDays(7).reduce((s,d) => s + onDay(d, v.id).length, 0) / 7;
+    const a = ma(v, 5), b = lastNDays(7).reduce((s,d) => s + onCal(d, v.id).length, 0) / 7;
     if (!b) return { pct: 0, dir: 0 };
     const pct = Math.round(((a - b) / b) * 100);
     return { pct, dir: pct > 2 ? 1 : pct < -2 ? -1 : 0 };
@@ -607,8 +629,8 @@
 
     const tile = v => {
       const evs = onDay(new Date(), v.id);
-      const yes = onDay(dayStart(new Date(Date.now() - DAY)), v.id).length;
-      const week = lastNDays(7).reduce((a,d) => a + onDay(d, v.id).length, 0) / 7;
+      const yes = onCal(new Date(Date.now() - DAY), v.id).length;
+      const week = lastNDays(7).reduce((a,d) => a + onCal(d, v.id).length, 0) / 7;
       const last = evs.length ? evs[evs.length-1].ts : null;
       const sinceLast = last ? (Date.now() - new Date(last).getTime()) : 0;
       const head = hasPrice(v) ? money(spendOf(v, evs)) : 'no cost';
@@ -625,7 +647,7 @@
       const v = act[0];
       const evs = onDay(new Date(), v.id);
       const yes = onDay(new Date(Date.now() - DAY), v.id).length;
-      const week = lastNDays(7).reduce((a,d) => a + onDay(d, v.id).length, 0) / 7;
+      const week = lastNDays(7).reduce((a,d) => a + onCal(d, v.id).length, 0) / 7;
       return `
         <div class="status"><span>${clock()}</span><span>ViceMaxxing</span></div>
         <div class="eyebrow">Today</div>
@@ -639,8 +661,7 @@
             <div class="sub">${hasPrice(v) ? money(spendOf(v, evs)) + ' today' : 'no cost'}<br>${yes} yesterday · avg <b>${week.toFixed(1)}</b></div>
           </div>
         </div>
-        <div class="listhead">Today · tap a mark to edit</div>
-        ${timeline()}
+        <div class="tlwrap">${timeline()}</div>
       `;
     }
 
@@ -651,8 +672,7 @@
       ${sleepRow()}
       <div class="eyebrow" style="margin-top:12px">Day started ${hhmm(dayStart(new Date()))} · ${(Math.max(0,(new Date() - dayStart(new Date()))/3600000)).toFixed(0)}h so far</div>
       <div class="tiles ${act.length === 2 ? 'two' : 'many'}" style="margin-top:10px">${act.map(tile).join('')}</div>
-      <div class="listhead">Today · tap to add one, hold for details</div>
-      ${timeline()}
+      <div class="tlwrap">${timeline()}</div>
     `;
   }
 
@@ -663,7 +683,7 @@
     const first = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
     const daysIn = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 0).getDate();
     const lead = (first.getDay() + 6) % 7;
-    const counts = []; for (let d=1; d<=daysIn; d++) counts.push(onDay(new Date(first.getFullYear(), first.getMonth(), d), v.id).length);
+    const counts = []; for (let d=1; d<=daysIn; d++) counts.push(onCal(new Date(first.getFullYear(), first.getMonth(), d), v.id).length);
     const max = Math.max(3, ...counts);
     const shade = n => n === 0 ? '' : n/max < .35 ? '#eef1f6' : n/max < .6 ? '#dbe3ef' : n/max < .85 ? '#a9bbdd' : v.colour;
     const inkFor = n => n/max >= .85 ? '#ffffff' : '#41506a';
@@ -679,7 +699,7 @@
         data-day="${d}" style="${bg ? `background:${bg};border-color:${bg};color:${inkFor(n)}` : ''}">${d}</button>`;
     }
 
-    const selEvents = onDay(selectedDay, v.id).sort((a,b) => new Date(b.ts) - new Date(a.ts));
+    const selEvents = onCal(selectedDay, v.id).sort((a,b) => new Date(b.ts) - new Date(a.ts));
     const selSpend = selEvents.reduce((a,e) => a + evCost(e), 0);
 
     return `
@@ -694,7 +714,7 @@
       <div class="dow">${['M','T','W','T','F','S','S'].map(d=>`<div>${d}</div>`).join('')}</div>
       <div class="cal">${cells}</div>
       <div class="legend">Less<i style="background:#eef1f6"></i><i style="background:#dbe3ef"></i><i style="background:#a9bbdd"></i><i style="background:${v.colour}"></i>More</div>
-      <div class="daypanel">
+      <div class="daypanel panel-scroll">
         <div class="h"><b>${selectedDay.toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'})}</b>
           <span>${selEvents.length}${hasPrice(v) ? ' · ' + money(selSpend) : ''}</span></div>
         ${selEvents.length ? selEvents.map(e => `<button class="entry" data-edit="${e.id}">
@@ -709,16 +729,16 @@
   function screenStats(){
     const v = vice(filterVice);
     const days = lastNDays(statsWindow);
-    const counts = days.map(d => onDay(d, v.id).length);
+    const counts = days.map(d => onCal(d, v.id).length);
     const avg = counts.reduce((a,b)=>a+b,0) / statsWindow;
     const prev = []; for (let i=statsWindow*2-1; i>=statsWindow; i--) prev.push(new Date(today.getTime()-i*DAY));
-    const prevAvg = prev.reduce((a,d) => a + onDay(d, v.id).length, 0) / statsWindow;
+    const prevAvg = prev.reduce((a,d) => a + onCal(d, v.id).length, 0) / statsWindow;
     const deltaPct = prevAvg ? Math.round(((avg-prevAvg)/prevAvg)*100) : 0;
     const max = Math.max(1, ...counts);
 
-    const range = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= dayStart(days[0]));
+    const range = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= calKey(days[0]));
     const byTrigger = {}; range.forEach(e => { const k = e.trigger || 'Untagged'; byTrigger[k]=(byTrigger[k]||0)+1; });
-    const trigRows = Object.entries(byTrigger).sort((a,b)=>b[1]-a[1]).slice(0,4);
+    const trigRows = Object.entries(byTrigger).sort((a,b)=>b[1]-a[1]).slice(0,3);
 
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
     const monthEvs = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= monthStart);
@@ -757,7 +777,7 @@
         const q = ns.reduce((a,n) => a + (n.quality||0), 0) / ns.length;
         return `<div class="formsline">Sleep · ${ns.length} night${ns.length>1?'s':''} logged · avg quality <b>${q.toFixed(1)}/5</b></div>`;
       })()}
-      <div class="listhead">By trigger${Object.keys(byTrigger).length>4?' · top 4 of '+Object.keys(byTrigger).length:''}</div>
+      <div class="listhead" style="margin-top:14px">By trigger${Object.keys(byTrigger).length>3?' · top 3':''}</div>
       ${trigRows.length ? trigRows.map(([k,c]) => `<div class="entry" style="cursor:default">
           <span class="t" style="width:auto">${E(k)}</span>
           <span class="tag">${Math.round(c/Math.max(1,range.length)*100)}% · ${c}</span></div>`).join('')
@@ -813,9 +833,8 @@
   }
 
   function render(){
-    document.getElementById('screen').innerHTML = `<div class="screen">${SCREENS[tab]()}</div>`;
-    const act = active();
-    document.querySelector('.screen').style.paddingBottom = tab === 'settings' ? '44px' : '124px';
+    const cls = tab === 'settings' ? 'screen scroll' : 'screen';
+    document.getElementById('screen').innerHTML = `<div class="${cls}">${SCREENS[tab]()}</div>`;
     renderBar();
     document.getElementById('tabs').innerHTML = TABS.map(([id,label,icon]) =>
       `<button class="tab ${tab===id?'on':''}" data-tab="${id}"><svg viewBox="0 0 24 24">${icon}</svg>${label}</button>`).join('');
