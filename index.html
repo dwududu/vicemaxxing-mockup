@@ -66,6 +66,9 @@
   .tiles{display:grid; gap:10px; margin-top:16px}
   .tiles.two{grid-template-columns:1fr}
   .tiles.many{grid-template-columns:1fr 1fr}
+  .tiles.triple{display:flex; flex-wrap:wrap; justify-content:center; align-content:space-between;
+                grid-template-columns:none; grid-template-rows:none; gap:8px}
+  .tiles.triple .tile{flex:0 0 calc(33.333% - 6px); height:calc(50% - 4px)}
   .tile{border:1px solid var(--line); border-radius:20px; padding:14px; background:#fff;
         cursor:pointer; display:flex; flex-direction:column; justify-content:space-between;
         transition:transform .08s ease, background .12s ease; user-select:none; -webkit-user-select:none;
@@ -86,6 +89,15 @@
              justify-content:center; gap:5px}
   .tile .mid .tnum{margin:0; text-align:center}
   .tile .sub{text-align:left}
+  .tiles.compact .tile{padding:9px 9px}
+  .tiles.compact .tile .nm{font-size:9.5px; letter-spacing:.05em}
+  .tiles.compact .tile .hold{display:none}
+  .tiles.compact .tile .tnum{font-size:30px !important}
+  .tiles.compact .tile .mid{gap:1px}
+  .tiles.compact .tile .dchip{font-size:9px; padding:2px 6px}
+  .tiles.compact .tile .sub{font-size:9.5px; margin-top:1px; line-height:1.25}
+  .tiles.compact .tile .over .snum{font-size:34px}
+  .tiles.compact .tile .over .slab{font-size:8.5px}
   .wbody{flex:1 1 auto; min-height:0; display:flex; align-items:center; gap:16px}
   .wleft{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:6px}
   .wright{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px}
@@ -342,6 +354,18 @@
   .formrow .fname span{display:block; font-size:11.5px; color:#9aa5b6; margin-top:1px}
   .formrow input{width:74px !important; padding:8px 10px !important; font-size:14px !important}
   .formrow .cur{font-size:12.5px; color:#9aa5b6}
+  .formhead{display:flex; gap:6px; align-items:center; padding:2px 0 6px; font-size:9px; letter-spacing:.07em;
+            text-transform:uppercase; color:#aab4c2; font-weight:650}
+  .formhead span:nth-child(1){flex:1}
+  .formhead span:nth-child(2),.formhead span:nth-child(3){width:46px; text-align:center}
+  .formhead span:nth-child(4){width:104px; text-align:right}
+  .frow{display:flex; gap:6px; align-items:center; padding:7px 0; border-bottom:1px solid #f4f7fb}
+  .frow .fn{flex:1 1 auto; min-width:0; font-size:13px; color:var(--body); overflow:hidden;
+            text-overflow:ellipsis; white-space:nowrap}
+  .frow input{width:46px !important; padding:6px 6px !important; font-size:13px !important; text-align:center}
+  .frow .ai{display:flex; align-items:center; gap:2px}
+  .frow .ai input{width:44px !important}
+  .frow .ai em{font-style:normal; font-size:9px; color:#b6c0cd}
   .attrrow{display:flex; gap:12px; padding:0 0 10px; border-bottom:1px solid #f4f7fb}
   .attrrow label{flex:1; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted)}
   .attrrow input{width:60px !important; padding:6px 8px !important; font-size:13px !important}
@@ -367,14 +391,13 @@
   .screen.scroll{overflow-y:auto; -webkit-overflow-scrolling:touch}
   nav{position:static; transform:none; width:100%; height:74px; flex:0 0 auto;
       border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom)}
-  .tiles{flex:1 1 auto; min-height:0}
-  .tiles.many{grid-auto-rows:1fr}
+  .tiles{flex:1 1 0; min-height:0; overflow:hidden}
+  .tiles.many{grid-auto-rows:minmax(0,1fr); grid-template-rows:repeat(2,minmax(0,1fr))}
   .tiles.two{grid-template-columns:1fr; grid-auto-rows:1fr}
-  .tile{min-height:0}
-  .tlwrap{flex:0 0 auto; height:190px; margin-top:8px}
+  .tile, .tiles.many .tile, .tiles.two .tile{min-height:0; overflow:hidden}
+  .tlwrap{flex:0 0 auto; height:190px; margin-top:8px; min-height:0}
+  .tiles.compact + .tlwrap{height:150px}
   .tl{height:100%}
-  .tlwrap{flex:1 1 auto; min-height:0; display:flex; flex-direction:column}
-  .tl{flex:1 1 auto; min-height:0; overflow:hidden; margin-top:8px; display:flex; flex-direction:column; justify-content:center}
   .panel-scroll{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px}
   .cal{flex:0 0 auto}
   .cell{aspect-ratio:auto; height:38px}
@@ -395,7 +418,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v14</div>
+    <div class="kicker">Prototype · v15</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -421,7 +444,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v14';
+  const KEY = 'vicemaxxing.prototype.v15';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -433,31 +456,41 @@
 
   // Fixed catalogue. A vice owns its forms; a form owns its price basis.
   // price 0 means "no money attached" and every money figure for it is hidden.
+  // A form is what you log. packPrice / packUnits is what you buy and how many
+  // loggable units it contains — 20 cigarettes in a pack, ~60 sessions in a pod.
+  // attrs are per LOG unit, so a pod's nicotine is divided across its sessions.
   const CATALOGUE = [
     { id:'smoke', name:'Smoke', colour:'#1d4ed8', on:true, forms:[
-        { id:'cig',   name:'Cigarette', plural:'cigarettes', price:107, per:20,
+        { id:'cig',   name:'Cigarette', plural:'cigarettes', packPrice:107, packUnits:20,
+          note:'per stick',
           attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:0.8 }, { k:'tar', label:'Tar', unit:'mg', v:10 }] },
-        { id:'pod',   name:'Vape pod',  plural:'pods',       price:55,  per:1,
-          attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:20 },  { k:'tar', label:'Tar', unit:'mg', v:0 }] },
-        { id:'pouch', name:'Pouch',     plural:'pouches',    price:68,  per:20,
-          attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:8 },   { k:'tar', label:'Tar', unit:'mg', v:0 }] }
+        { id:'pod',   name:'Vape session', plural:'sessions', packPrice:55, packUnits:60,
+          note:'~60 sessions per pod',
+          attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:0.33 }, { k:'tar', label:'Tar', unit:'mg', v:0 }] },
+        { id:'pouch', name:'Pouch', plural:'pouches', packPrice:68, packUnits:20,
+          note:'per pouch',
+          attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:8 }, { k:'tar', label:'Tar', unit:'mg', v:0 }] }
       ]},
     { id:'alcohol', name:'Alcohol', colour:'#b45309', on:true, forms:[
-        { id:'beer',   name:'Beer',   plural:'beers',   price:45, per:1,
+        { id:'beer',   name:'Beer',   plural:'beers',   packPrice:45, packUnits:1, note:'per glass',
           attrs:[{ k:'alc', label:'Alcohol', unit:'units', v:1.7 }, { k:'cal', label:'Calories', unit:'kcal', v:140 }] },
-        { id:'wine',   name:'Wine',   plural:'glasses', price:60, per:1,
+        { id:'wine',   name:'Wine',   plural:'glasses', packPrice:60, packUnits:1, note:'per glass',
           attrs:[{ k:'alc', label:'Alcohol', unit:'units', v:1.7 }, { k:'cal', label:'Calories', unit:'kcal', v:130 }] },
-        { id:'spirit', name:'Spirit', plural:'shots',   price:75, per:1,
+        { id:'spirit', name:'Spirit', plural:'shots',   packPrice:75, packUnits:1, note:'per shot',
           attrs:[{ k:'alc', label:'Alcohol', unit:'units', v:1.0 }, { k:'cal', label:'Calories', unit:'kcal', v:60 }] }
       ]},
     { id:'fap', name:'Fap', colour:'#6d28d9', on:true, forms:[
-        { id:'session', name:'Session', plural:'sessions', price:0, per:1, attrs:[] }
+        { id:'session', name:'Session', plural:'sessions', packPrice:0, packUnits:1, note:'no cost attached', attrs:[] }
       ]},
     { id:'soda', name:'Soda', colour:'#0f766e', on:true, forms:[
-        { id:'can',    name:'Can',    plural:'cans',    price:9,  per:1,
+        { id:'can',    name:'Can',    plural:'cans',    packPrice:9,  packUnits:1, note:'per can',
           attrs:[{ k:'sug', label:'Sugar', unit:'g', v:39 }, { k:'cal', label:'Calories', unit:'kcal', v:139 }] },
-        { id:'bottle', name:'Bottle', plural:'bottles', price:15, per:1,
+        { id:'bottle', name:'Bottle', plural:'bottles', packPrice:15, packUnits:1, note:'per bottle',
           attrs:[{ k:'sug', label:'Sugar', unit:'g', v:108 }, { k:'cal', label:'Calories', unit:'kcal', v:630 }] }
+      ]},
+    { id:'coffee', name:'Coffee', colour:'#7c3aed', on:true, forms:[
+        { id:'shot', name:'Espresso shot', plural:'shots', packPrice:12, packUnits:1, note:'per shot',
+          attrs:[{ k:'caf', label:'Caffeine', unit:'mg', v:63 }, { k:'cal', label:'Calories', unit:'kcal', v:3 }] }
       ]}
   ];
 
@@ -525,6 +558,11 @@
           const d = new Date(day); d.setHours(21 + Math.floor(rnd()*2), Math.floor(rnd()*60), 0, 0);
           push('fap', 'session', d, 'Habit');
         }
+        const shots = 1 + Math.floor(rnd()*3);
+        for (let i = 0; i < shots; i++){
+          const d = new Date(day); d.setHours(7 + i*3 + Math.floor(rnd()*2), Math.floor(rnd()*60), 0, 0);
+          push('coffee', 'shot', d, pick(['Habit','Social','Craving']));
+        }
         const weekend = [5,6,0].includes(new Date(day).getDay());
         const drinks = back <= 3 ? 0 : (weekend ? 1 + Math.floor(rnd()*4) : (rnd() < .35 ? 1 : 0));
         for (let i = 0; i < drinks; i++){
@@ -554,7 +592,7 @@
   let state;
   try { state = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ state = fresh(); }
   if (!state.events || !state.vices) state = fresh();
-  if (state.vices.length !== 4 || state.vices[2].id !== 'fap' || !state.vices[0].forms[0].attrs) state = fresh();  // catalogue changed
+  if (state.vices.length !== 5 || !state.vices[0].forms[0].packPrice) state = fresh();  // catalogue changed
   const save = () => localStorage.setItem(KEY, JSON.stringify(state));
 
   let tab = 'today', statsWindow = 7, filterVice = 'smoke';
@@ -564,8 +602,8 @@
   const vice = id => state.vices.find(v => v.id === id) || state.vices[0];
   const form = (v, id) => v.forms.find(f => f.id === id) || v.forms[0];
   const active = () => state.vices.filter(v => v.on);
-  const cost = f => f.price / f.per;
-  const hasPrice = v => v.forms.some(f => f.price > 0);
+  const cost = f => f.packPrice / f.packUnits;
+  const hasPrice = v => v.forms.some(f => f.packPrice > 0);
   const evCost = e => { const v = vice(e.viceId); return hasPrice(v) ? cost(form(v, e.formId)) : 0; };
   const money = n => 'HK$' + (n >= 100 ? Math.round(n) : n.toFixed(2));
   const hhmm = d => d.toTimeString().slice(0,5);
@@ -702,7 +740,7 @@
     };
 
     const fsFor = (n, big) => {
-      const base = big ? 100 : 62;
+      const base = big ? 100 : (act.length >= 5 ? 46 : 62);
       const len = String(n).length;
       return (len <= 1 ? base : len === 2 ? base * 0.82 : base * 0.64) + 'px';
     };
@@ -736,7 +774,7 @@
               <div class="tnum" style="font-size:${fsFor(evs.length, false)}">${evs.length}</div>
               <span class="dchip ${d.cls}">${d.txt}</span>
             </div>
-            <div class="sub">${head} · ${yes} yest<br>5d <b>${ma(v,5).toFixed(1)}</b> ${trendHTML(v)} · avg <b>${week.toFixed(1)}</b></div>
+            <div class="sub">${head} · ${yes} yest${act.length >= 5 ? '' : `<br>5d <b>${ma(v,5).toFixed(1)}</b> ${trendHTML(v)} · avg <b>${week.toFixed(1)}</b>`}</div>
           </div>
           ${streakOver(v)}
         </div>`;
@@ -799,8 +837,8 @@
       <div class="eyebrow">Today</div>
       <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
       ${sleepRow()}
-      <div class="eyebrow" style="margin-top:12px">Day started ${hhmm(dayStart(new Date()))} · ${(Math.max(0,(new Date() - dayStart(new Date()))/3600000)).toFixed(0)}h so far</div>
-      <div class="tiles ${act.length === 2 ? 'two' : 'many'}" style="margin-top:10px">${act.map(v => act.length === 2 ? tileWide(v, false) : tileGrid(v)).join('')}</div>
+      ${act.length >= 5 ? '' : `<div class="eyebrow" style="margin-top:12px">Day started ${hhmm(dayStart(new Date()))} · ${(Math.max(0,(new Date() - dayStart(new Date()))/3600000)).toFixed(0)}h so far</div>`}
+      <div class="tiles ${act.length === 2 ? 'two' : 'many'} ${act.length >= 5 ? 'compact triple' : ''}" style="margin-top:8px">${act.map(v => act.length === 2 ? tileWide(v, false) : tileGrid(v)).join('')}</div>
       <div class="tlwrap">${timeline()}</div>
     `;
   }
@@ -926,17 +964,13 @@
         <div><div class="lab">Show on Today</div><div class="sub">${v.forms.length} form${v.forms.length>1?'s':''}: ${v.forms.map(f=>f.name.toLowerCase()).join(', ')}</div></div>
         <button class="switch ${v.on?'on':''}" data-vice-toggle="${v.id}"><i></i></button>
       </div>
-      ${v.on ? v.forms.map(f => `
-        <div class="formrow">
-          <div class="fname">${E(f.name)}<span>${f.price > 0 ? (f.per > 1 ? f.per + ' per pack' : 'each') : 'no cost attached'}</span></div>
-          <span class="cur">HK$</span>
-          <input type="number" data-price="${v.id}:${f.id}" value="${f.price}" min="0" step="1" inputmode="numeric">
-        </div>
-        ${(f.attrs || []).length ? `<div class="attrrow">${f.attrs.map(a => `
-          <label>${a.label}
-            <input type="number" data-attr="${v.id}:${f.id}:${a.k}" value="${a.v}" min="0" step="0.1" inputmode="decimal">
-            <em>${a.unit}</em>
-          </label>`).join('')}</div>` : ''}`).join('') : ''}`;
+      ${v.on ? `<div class="formhead"><span>Form</span><span>HK$</span><span>units</span><span>per unit</span></div>` + v.forms.map(f => `
+        <div class="frow">
+          <span class="fn">${E(f.name)}</span>
+          <input type="number" data-price="${v.id}:${f.id}" value="${f.packPrice}" min="0" step="1" inputmode="numeric">
+          <input type="number" data-units="${v.id}:${f.id}" value="${f.packUnits}" min="1" step="1" inputmode="numeric">
+          ${(f.attrs || []).map(a => `<span class="ai"><input type="number" data-attr="${v.id}:${f.id}:${a.k}" value="${a.v}" min="0" step="0.1" inputmode="decimal"><em>${a.unit}</em></span>`).join('')}
+        </div>`).join('') : ''}`;
 
     return `
       <div class="status"><span>${clock()}</span><span>Settings</span></div>
@@ -1250,7 +1284,7 @@
     const pr = e.target.closest('[data-price]');
     if (pr){
       const [vid, fid] = pr.dataset.price.split(':');
-      form(vice(vid), fid).price = Math.max(0, +pr.value || 0);
+      form(vice(vid), fid).packPrice = Math.max(0, +pr.value || 0);
       save(); render(); return;
     }
     if (e.target.id === 'rtime'){ state.reminderTime = e.target.value; save(); }
