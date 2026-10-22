@@ -109,6 +109,19 @@
   textarea{font-family:inherit; font-size:15px; color:var(--ink); border:1.5px solid var(--line); border-radius:12px;
            padding:11px 13px; width:100%; min-height:76px; resize:none; outline:none}
 
+
+  /* clock-style wake time: two taps, no scrolling */
+  .dial{position:relative; width:244px; height:244px; margin:6px auto 2px}
+  .dial::before{content:''; position:absolute; inset:0; border-radius:50%; border:1px solid var(--line); background:var(--soft)}
+  .dialtime{text-align:center; font-size:34px; font-weight:700; color:var(--ink); letter-spacing:-.03em;
+            font-variant-numeric:tabular-nums; margin-top:6px}
+  .dialhint{text-align:center; font-size:11.5px; color:var(--muted); margin:6px 0 2px}
+  .dial button{position:absolute; transform:translate(-50%,-50%); border:0; font-family:inherit; cursor:pointer;
+               background:#fff; color:var(--ink); box-shadow:0 1px 2px rgba(15,23,42,.10)}
+  .dial .hd{width:42px; height:42px; border-radius:50%; font-size:15px; font-weight:600}
+  .dial .md{width:34px; height:34px; border-radius:50%; font-size:12.5px; color:#64748b}
+  .dial .hd.on, .dial .md.on{background:var(--ink); color:#fff}
+
   /* one-off coach mark */
   .coach{position:fixed; inset:0; z-index:60; display:none}
   .coach.on{display:block}
@@ -321,7 +334,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v9</div>
+    <div class="kicker">Prototype · v10</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -347,7 +360,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v9';
+  const KEY = 'vicemaxxing.prototype.v10';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -483,7 +496,7 @@
 
   const ma = (v, days) => lastNDays(days).reduce((a,d) => a + onDay(d, v.id).length, 0) / days;
   const trendOf = v => {
-    const a = ma(v, 5), b = ma(v, 20);
+    const a = ma(v, 5), b = lastNDays(7).reduce((s,d) => s + onDay(d, v.id).length, 0) / 7;
     if (!b) return { pct: 0, dir: 0 };
     const pct = Math.round(((a - b) / b) * 100);
     return { pct, dir: pct > 2 ? 1 : pct < -2 ? -1 : 0 };
@@ -500,8 +513,8 @@
   const sleepRow = () => {
     const n = nightFor(new Date());
     const txt = n
-      ? `Woke <b>${n.woke}</b> · sleep <b>${n.quality}/5</b>${n.notes ? ' · ' + E(n.notes.slice(0, 26)) : ''}`
-      : 'Last night · tap to log sleep';
+      ? `Today · woke <b>${n.woke}</b> · sleep <b>${n.quality}/5</b>${n.notes ? ' · ' + E(n.notes.slice(0, 24)) : ''}`
+      : 'Today · tap to log wake-up and sleep';
     return `<button class="sleeprow" id="sleepRow">
       <span class="moon">☾</span><span class="stxt">${txt}</span><span class="schev">›</span>
     </button>`;
@@ -584,7 +597,7 @@
           <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
             <span class="hold">hold</span></div>
           <div class="tnum">${evs.length}</div>
-          <div class="sub">${head} · ${yes} yest<br>5d <b>${ma(v,5).toFixed(1)}</b> · 20d <b>${ma(v,20).toFixed(1)}</b> ${trendHTML(v)}</div>
+          <div class="sub">${head} · ${yes} yest<br>avg <b>${week.toFixed(1)}</b> · 5d <b>${ma(v,5).toFixed(1)}</b> ${trendHTML(v)}</div>
         </div>`;
     };
 
@@ -871,45 +884,66 @@
     const key = String(dayKey(new Date()));
     const n = state.nights[key] || { woke:'07:30', quality:0, notes:'' };
     let quality = n.quality || 0;
-    let woke = n.woke || '07:30';
+    let [h0, m0] = (n.woke || '07:30').split(':').map(Number);
+    if (!(h0 >= 4 && h0 <= 11)) h0 = 7;
+    m0 = [0,15,30,45].reduce((best, m) => Math.abs(m - m0) < Math.abs(best - m0) ? m : best, 0);
+    let hour = h0, minute = m0;
 
-    // 04:00 → 11:45 in 15-minute steps: swiped, never typed
-    const slots = [];
-    for (let m = 4*60; m <= 11*60 + 45; m += 15)
-      slots.push(String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'));
+    const HOURS = [4,5,6,7,8,9,10,11];
+    const MINS = [0,15,30,45];
+    const SIZE = 244, C = SIZE/2, R_OUT = 94, R_IN = 56;
+    const place = (i, n, r) => {
+      const a = (i / n) * 2 * Math.PI - Math.PI/2;
+      return [C + r * Math.cos(a), C + r * Math.sin(a)];
+    };
+    const two = v => String(v).padStart(2,'0');
 
     const sheet = document.getElementById('sheet');
     const paint = () => {
       sheet.innerHTML = `
         <div class="grab"></div>
-        <h3>Last night</h3>
+        <h3>Today</h3>
         <div class="fieldlabel">Woke up</div>
-        <div class="timestrip" id="tstrip">${slots.map(t =>
-          `<button class="tchip ${t===woke?'on':''}" data-t="${t}">${t}</button>`).join('')}</div>
-        <div class="fieldlabel">Sleep quality</div>
+        <div class="dialtime" id="hub">${two(hour)}:${two(minute)}</div>
+        <div class="dialhint">tap an hour, then the minutes</div>
+        <div class="dial" id="dial">
+          ${HOURS.map((h, i) => {
+            const [x, y] = place(i, HOURS.length, R_OUT);
+            return `<button class="hd ${h===hour?'on':''}" data-h="${h}" style="left:${x}px; top:${y}px">${two(h)}</button>`;
+          }).join('')}
+          ${MINS.map((m, i) => {
+            const [x, y] = place(i, MINS.length, R_IN);
+            return `<button class="md ${m===minute?'on':''}" data-m="${m}" style="left:${x}px; top:${y}px">${two(m)}</button>`;
+          }).join('')}
+        </div>
+        <div class="fieldlabel" style="margin-top:14px">Sleep quality</div>
         <div class="cravings">${[1,2,3,4,5].map(q =>
           `<button class="cr ${quality===q?'on':''}" data-q="${q}">${q}</button>`).join('')}</div>
         <div class="fieldlabel">Notes · optional</div>
         <textarea id="notes" placeholder="Woke at 3, couldn't get back to sleep…">${E(n.notes || '')}</textarea>
         <div class="rowbtns"><button class="cta" id="saveSleep">Save</button></div>`;
-      const strip = document.getElementById('tstrip');
-      strip.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
-        woke = b.dataset.t;
-        strip.querySelectorAll('[data-t]').forEach(x => x.classList.toggle('on', x.dataset.t === woke));
-        const el = strip.querySelector('[data-t="' + woke + '"]');
-        el && el.scrollIntoView({ inline:'center', block:'nearest', behavior:'smooth' });
+
+      const hub = document.getElementById('hub');
+      const upd = () => { hub.textContent = `${two(hour)}:${two(minute)}`; };
+      sheet.querySelectorAll('[data-h]').forEach(b => b.onclick = () => {
+        hour = +b.dataset.h;
+        sheet.querySelectorAll('[data-h]').forEach(x => x.classList.toggle('on', +x.dataset.h === hour));
+        upd();
       });
-      strip.querySelectorAll('[data-q]').forEach(b => b.onclick = () => {});
+      sheet.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
+        minute = +b.dataset.m;
+        sheet.querySelectorAll('[data-m]').forEach(x => x.classList.toggle('on', +x.dataset.m === minute));
+        upd();
+      });
       sheet.querySelectorAll('[data-q]').forEach(b => b.onclick = () => {
         quality = +b.dataset.q;
         sheet.querySelectorAll('[data-q]').forEach(x => x.classList.toggle('on', +x.dataset.q === quality));
       });
       document.getElementById('saveSleep').onclick = () => {
+        const woke = `${two(hour)}:${two(minute)}`;
         state.nights[key] = { woke, quality, notes: document.getElementById('notes').value.trim() };
-        save(); closeSheet(); render(); toast('Last night saved · woke ' + woke);
+        save(); closeSheet(); render(); toast('Saved · woke ' + woke);
       };
-      const on = strip.querySelector('[data-t="' + woke + '"]');
-      if (on) setTimeout(() => on.scrollIntoView({ inline:'center', block:'nearest' }), 60);
     };
 
     document.getElementById('toast').classList.remove('on');
