@@ -334,7 +334,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v10</div>
+    <div class="kicker">Prototype · v11</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -360,7 +360,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v10';
+  const KEY = 'vicemaxxing.prototype.v11';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -392,11 +392,33 @@
       ]}
   ];
 
-  // a night out past midnight still belongs to the day you woke up on
+  // A day runs from one wake-up to the next, so an all-nighter stays one day.
+  // With no wake logged, fall back to a 04:00 boundary.
   const DAY_START_HOUR = 4;
-  const dayKey = d => { const x = new Date(d); x.setHours(x.getHours() - DAY_START_HOUR); x.setHours(0,0,0,0); return x.getTime(); };
-  const dayStart = d => new Date(dayKey(d || new Date()));
+  const nightTime = (dateKey, woke) => {
+    const [h, m] = String(woke || '07:00').split(':').map(Number);
+    const d = new Date(dateKey + 'T00:00:00');
+    d.setHours(h || 7, m || 0, 0, 0);
+    return d;
+  };
+  const wakeList = () => Object.entries(state.nights || {})
+    .map(([k, v]) => ({ key: k, t: nightTime(k, v.woke), quality: v.quality, notes: v.notes, woke: v.woke }))
+    .filter(w => !isNaN(w.t.getTime()))
+    .sort((a, b) => a.t - b.t);
+  const dayStartOf = ts => {
+    const when = new Date(ts);
+    const past = wakeList().filter(w => w.t <= when);
+    if (past.length) return past[past.length - 1].t;
+    const f = new Date(when);
+    if (f.getHours() < DAY_START_HOUR) f.setDate(f.getDate() - 1);
+    f.setHours(DAY_START_HOUR, 0, 0, 0);
+    return f;
+  };
+  const dayKey = d => dayStartOf(d).getTime();
+  const dayStart = d => dayStartOf(d || new Date());
   const minsOfDay = d => { const x = new Date(d); return x.getHours()*60 + x.getMinutes(); };
+  const noon = d => { const x = new Date(d); x.setHours(12,0,0,0); return x; };
+  const ymd = d => { const x = new Date(d); return x.getFullYear() + '-' + String(x.getMonth()+1).padStart(2,'0') + '-' + String(x.getDate()).padStart(2,'0'); };
 
   function seedEvents(){
     const out = [];
@@ -453,7 +475,7 @@
     const out = {};
     for (let back = 13; back >= 0; back--){
       const d = new Date(today.getTime() - back * DAY); d.setHours(8,0,0,0);
-      const key = String(dayKey(d));
+      const key = ymd(d);
       const wake = 6*60 + Math.floor(rnd()*110);            // 06:00 – 07:50
       out[key] = { woke: String(Math.floor(wake/60)).padStart(2,'0') + ':' + String(wake%60).padStart(2,'0'),
                    quality: 2 + Math.floor(rnd()*4), notes: '' };
@@ -480,10 +502,10 @@
   const money = n => 'HK$' + (n >= 100 ? Math.round(n) : n.toFixed(2));
   const hhmm = d => d.toTimeString().slice(0,5);
   const clock = () => new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  const onDay = (d, vid) => state.events.filter(e => dayKey(e.ts) === dayKey(d) && (!vid || e.viceId === vid));
+  const onDay = (d, vid) => state.events.filter(e => dayKey(e.ts) === dayKey(noon(d)) && (!vid || e.viceId === vid));
   const E = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-  function lastNDays(n){ const o=[]; for (let i=n-1;i>=0;i--) o.push(new Date(today.getTime()-i*DAY)); return o; }
+  function lastNDays(n){ const o=[]; for (let i=n-1;i>=0;i--) o.push(noon(new Date(today.getTime()-i*DAY))); return o; }
   const dur = ms => { const h=Math.floor(ms/3600000), m=Math.round((ms%3600000)/60000); return h>0 ? h+'h '+m+'m' : m+'m'; };
   function longestGap(evs){ if (evs.length<2) return 0; let mx=0;
     for (let i=1;i<evs.length;i++) mx=Math.max(mx, new Date(evs[i].ts)-new Date(evs[i-1].ts)); return mx; }
@@ -508,7 +530,7 @@
     return `<span class="${cls}">${t.dir > 0 ? '▲' : '▼'} ${Math.abs(t.pct)}%</span>`;
   };
 
-  const nightFor = (d) => state.nights[String(dayKey(d || new Date()))] || null;
+  const nightFor = (d) => state.nights[ymd(d || new Date())] || null;
 
   const sleepRow = () => {
     const n = nightFor(new Date());
@@ -527,28 +549,23 @@
     const todayEvs = onDay(new Date()).filter(e => act.some(v => v.id === e.viceId));
     const spendOf = (v, evs) => evs.reduce((a,e) => a + evCost(e), 0);
 
-    // window starts three hours before the first entry of the day, not at midnight
+    // the window runs from this waking day's start to now, in minutes elapsed from that start
     function windowFor(){
-      const mins = minsOfDay;
-      const nowMin = mins(new Date());
-      const floor = DAY_START_HOUR * 60;
-      if (!todayEvs.length){
-        return { from: Math.max(floor, nowMin - 90), to: Math.min(1440, nowMin + 30) };
-      }
-      const times = todayEvs.map(e => mins(e.ts));
-      const from = Math.max(floor, Math.min(...times) - 45);
-      const to = Math.min(1440, Math.max(nowMin, ...times) + 30);
-      return { from, to };
+      const dayBeg = dayStart(new Date());
+      const el = ts => (new Date(ts) - dayBeg.getTime()) / 60000;
+      const nowEl = el(new Date());
+      if (!todayEvs.length) return { dayBeg, nowEl, from: Math.max(0, nowEl - 90), to: nowEl + 30 };
+      const els = todayEvs.map(e => el(e.ts));
+      return { dayBeg, nowEl, from: Math.max(0, Math.min(...els) - 45), to: Math.max(nowEl, ...els) + 30 };
     }
 
     const timeline = () => {
       if (!todayEvs.length) return `<div class="tl"><div class="tl-empty">Nothing logged yet today. Tap a tile.</div></div>`;
-      const { from, to } = windowFor();
+      const { dayBeg, from, to } = windowFor();
       const span = Math.max(90, to - from);
+      const el = ts => (new Date(ts) - dayBeg.getTime()) / 60000;
       const pct = m => Math.max(0, Math.min(100, (m - from) / span * 100));
-      const mins = minsOfDay;
-      const nowPct = pct(mins(new Date()));
-      const hh = m => String(Math.floor(m/60)).padStart(2,'0');
+      const nowEl = el(new Date());
 
       const lanes = act.map(v => {
         const evs = todayEvs.filter(e => e.viceId === v.id);
@@ -556,29 +573,32 @@
           <span class="tl-lab">${E(v.name)}</span>
           <div class="tl-track"><div class="tl-base"></div>
             ${evs.map(e => `<button class="tl-dot" data-edit="${e.id}"
-               style="left:${pct(mins(e.ts)).toFixed(2)}%;background:${v.colour}"
+               style="left:${pct(el(e.ts)).toFixed(2)}%;background:${v.colour}"
                title="${E(v.name)} ${hhmm(new Date(e.ts))}"></button>`).join('')}
           </div>
         </div>`;
       }).join('');
 
+      // ticks sit on real clock hours inside the window
       const step = span <= 210 ? 60 : span <= 420 ? 120 : 180;
+      const endTime = new Date(dayBeg.getTime() + to * 60000);
       const ticks = [];
-      for (let m = Math.ceil(from/60)*60; m <= to; m += step) ticks.push(m);
-      if (!ticks.length || to - ticks[ticks.length-1] > 60) ticks.push(to);
+      const t = new Date(dayBeg.getTime() + from * 60000);
+      t.setMinutes(0, 0, 0);
+      if (t.getTime() < dayBeg.getTime() + from * 60000) t.setHours(t.getHours() + 1);
+      for (let x = t; x <= endTime; x = new Date(x.getTime() + step * 60000)) ticks.push(x);
 
       return `<div class="tl">
-        <div class="tl-nowwrap"><div class="tl-now" style="left:${nowPct.toFixed(2)}%"></div></div>
+        <div class="tl-nowwrap"><div class="tl-now" style="left:${pct(nowEl).toFixed(2)}%"></div></div>
         ${lanes}
         <div class="tl-lane" style="height:15px; margin-top:4px">
           <span class="tl-lab"></span>
           <div class="tl-track" style="height:15px">
-            ${ticks.map(m => {
-              const left = pct(m);
+            ${ticks.map(x => {
+              const left = pct((x.getTime() - dayBeg.getTime()) / 60000);
               const anchor = left < 4 ? '0' : left > 96 ? '-100%' : '-50%';
-              const lab = (m % 60 === 0) ? hh(m) : hh(m) + ':' + String(m % 60).padStart(2,'0');
               return `<span style="position:absolute; top:0; left:${left.toFixed(1)}%; transform:translateX(${anchor});
-                        font-size:9.5px; color:#a9b4c4">${lab}</span>`;
+                        font-size:9.5px; color:#a9b4c4">${String(x.getHours()).padStart(2,'0')}</span>`;
             }).join('')}
           </div>
         </div>
@@ -597,7 +617,7 @@
           <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
             <span class="hold">hold</span></div>
           <div class="tnum">${evs.length}</div>
-          <div class="sub">${head} · ${yes} yest<br>avg <b>${week.toFixed(1)}</b> · 5d <b>${ma(v,5).toFixed(1)}</b> ${trendHTML(v)}</div>
+          <div class="sub">${head} · ${yes} yest<br>${trendHTML(v)} · 5d <b>${ma(v,5).toFixed(1)}</b> · avg <b>${week.toFixed(1)}</b></div>
         </div>`;
     };
 
@@ -629,7 +649,8 @@
       <div class="eyebrow">Today</div>
       <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
       ${sleepRow()}
-      <div class="tiles ${act.length === 2 ? 'two' : 'many'}" style="margin-top:14px">${act.map(tile).join('')}</div>
+      <div class="eyebrow" style="margin-top:12px">Day started ${hhmm(dayStart(new Date()))} · ${(Math.max(0,(new Date() - dayStart(new Date()))/3600000)).toFixed(0)}h so far</div>
+      <div class="tiles ${act.length === 2 ? 'two' : 'many'}" style="margin-top:10px">${act.map(tile).join('')}</div>
       <div class="listhead">Today · tap to add one, hold for details</div>
       ${timeline()}
     `;
@@ -695,7 +716,7 @@
     const deltaPct = prevAvg ? Math.round(((avg-prevAvg)/prevAvg)*100) : 0;
     const max = Math.max(1, ...counts);
 
-    const range = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= days[0]);
+    const range = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= dayStart(days[0]));
     const byTrigger = {}; range.forEach(e => { const k = e.trigger || 'Untagged'; byTrigger[k]=(byTrigger[k]||0)+1; });
     const trigRows = Object.entries(byTrigger).sort((a,b)=>b[1]-a[1]).slice(0,4);
 
@@ -794,7 +815,7 @@
   function render(){
     document.getElementById('screen').innerHTML = `<div class="screen">${SCREENS[tab]()}</div>`;
     const act = active();
-    document.querySelector('.screen').style.paddingBottom = tab === 'settings' ? '44px' : '104px';
+    document.querySelector('.screen').style.paddingBottom = tab === 'settings' ? '44px' : '124px';
     renderBar();
     document.getElementById('tabs').innerHTML = TABS.map(([id,label,icon]) =>
       `<button class="tab ${tab===id?'on':''}" data-tab="${id}"><svg viewBox="0 0 24 24">${icon}</svg>${label}</button>`).join('');
@@ -881,7 +902,7 @@
   }
 
   function openSleepSheet(){
-    const key = String(dayKey(new Date()));
+    const key = ymd(new Date());
     const n = state.nights[key] || { woke:'07:30', quality:0, notes:'' };
     let quality = n.quality || 0;
     let [h0, m0] = (n.woke || '07:30').split(':').map(Number);
