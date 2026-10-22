@@ -63,6 +63,10 @@
   .tile .sub{font-size:11.5px; color:var(--muted); margin-top:4px; line-height:1.35}
   .tile .tnum{font-size:46px; font-weight:700; color:var(--ink); letter-spacing:-.04em; line-height:1;
               margin-top:10px; font-variant-numeric:tabular-nums}
+  .tnumrow{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px}
+  .streak{font-size:9.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#0f7a52;
+          background:#e6f4ec; border-radius:999px; padding:5px 9px; white-space:nowrap}
+  .streak.long{background:#d6efdf}
   .tile .hold{margin-left:auto; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:#b6c0cd}
   .stepper{display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:10px;
            background:var(--soft); border-radius:999px; padding:5px 5px 5px 14px}
@@ -353,7 +357,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v11</div>
+    <div class="kicker">Prototype · v12</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -379,7 +383,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v11';
+  const KEY = 'vicemaxxing.prototype.v12';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -460,7 +464,7 @@
         if (rnd() < .6) push('fap', 'session', new Date(Date.now() - 3*3600000));
         const s = 1 + Math.floor(rnd()*2);
         for (let i = 0; i < s; i++) push('soda', rnd() < .75 ? 'can' : 'bottle', new Date(Date.now() - (i*3+1)*3600000));
-        if (rnd() < .4) push('alcohol', pick(['beer','wine']), new Date(Date.now() - 5*3600000), 'Social');
+
       } else {
         const c = 6 + Math.floor(rnd()*6);
         for (let i = 0; i < c; i++){
@@ -477,7 +481,7 @@
           push('fap', 'session', d, 'Habit');
         }
         const weekend = [5,6,0].includes(new Date(day).getDay());
-        const drinks = weekend ? 1 + Math.floor(rnd()*4) : (rnd() < .35 ? 1 : 0);
+        const drinks = back <= 3 ? 0 : (weekend ? 1 + Math.floor(rnd()*4) : (rnd() < .35 ? 1 : 0));
         for (let i = 0; i < drinks; i++){
           const d = new Date(day); d.setHours(18 + Math.floor(rnd()*4), Math.floor(rnd()*60), 0, 0);
           push('alcohol', pick(['beer','beer','wine','spirit']), d, pick(['Social','Stress','Habit']));
@@ -550,6 +554,20 @@
     if (!t.dir) return `<span class="ma">flat</span>`;
     const cls = t.dir > 0 ? 'trend-up' : 'trend-down';
     return `<span class="${cls}">${t.dir > 0 ? '▲' : '▼'} ${Math.abs(t.pct)}%</span>`;
+  };
+
+  // consecutive calendar days with nothing logged for this vice, never counting time before the app had data
+  const streakFor = v => {
+    if (onCal(new Date(), v.id).length) return 0;
+    if (!state.events.length) return 0;
+    const first = Math.min(...state.events.map(e => calKey(e.ts)));
+    let n = 0;
+    for (let i = 0; i < 400; i++){
+      const d = new Date(Date.now() - i * DAY);
+      if (calKey(d) < calKey(first)) break;
+      if (onCal(d, v.id).length === 0) n++; else break;
+    }
+    return n;
   };
 
   const nightFor = (d) => state.nights[ymd(d || new Date())] || null;
@@ -638,7 +656,7 @@
         <div class="tile" data-vice="${v.id}">
           <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
             <span class="hold">hold</span></div>
-          <div class="tnum">${evs.length}</div>
+          <div class="tnumrow"><div class="tnum" style="margin-top:0">${evs.length}</div>${(() => { const s = streakFor(v); return s >= 2 ? `<span class="streak${s >= 7 ? ' long' : ''}">${s}d streak</span>` : ''; })()}</div>
           <div class="sub">${head} · ${yes} yest<br>${trendHTML(v)} · 5d <b>${ma(v,5).toFixed(1)}</b> · avg <b>${week.toFixed(1)}</b></div>
         </div>`;
     };
@@ -657,7 +675,7 @@
           <div class="tile" data-vice="${v.id}" style="min-height:210px">
             <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
               <span class="hold">hold for details</span></div>
-            <div class="tnum" style="font-size:78px; margin-top:6px">${evs.length}</div>
+            <div class="tnumrow"><div class="tnum" style="font-size:78px; margin-top:0">${evs.length}</div>${(() => { const s = streakFor(v); return s >= 2 ? `<span class="streak">${s}-day streak</span>` : ''; })()}</div>
             <div class="sub">${hasPrice(v) ? money(spendOf(v, evs)) + ' today' : 'no cost'}<br>${yes} yesterday · avg <b>${week.toFixed(1)}</b></div>
           </div>
         </div>
@@ -769,6 +787,7 @@
         ${hasPrice(v) ? `<div class="card"><div class="k">Spend</div><div class="v">${money(Math.round(monthSpend))}</div><div class="s">${E(v.name)} this month</div></div>` : ''}
         <div class="card"><div class="k">Longest gap</div><div class="v">${gap?dur(gap):'—'}</div><div class="s">last ${statsWindow} days</div></div>
       </div>
+      ${streakFor(v) >= 2 ? `<div class="formsline">Clean streak · <b>${streakFor(v)} days</b> with nothing logged</div>` : ''}
       <div class="formsline">${breakdown(v, monthEvs).split(' · ').map(p=>p.replace(/^(\d+)/,'<b>$1</b>')).join(' · ') || 'No entries this month'}</div>
       ${active().length > 1 ? `<div class="totalrow"><span class="k">All vices, this month</span><span class="v">${money(Math.round(allMonth))}</span></div>` : ''}
       ${(() => {
