@@ -45,6 +45,22 @@
   .vcard .sub{font-size:13px; color:var(--muted); margin-top:5px}
   .vcard .sub b{color:var(--ink); font-weight:600}
 
+
+  .tile{position:relative; overflow:hidden}
+  .tile.streaked{background:#f5f8fb; border-color:#e4ebf3}
+  .tile.streaked .under .tnumrow, .tile.streaked .under .sub{opacity:0}
+  .tile .over{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
+              justify-content:center; gap:1px; pointer-events:none}
+  .tile .over .snum{font-size:56px; font-weight:800; color:var(--ink); letter-spacing:-.05em; line-height:1;
+                    font-variant-numeric:tabular-nums}
+  .tile .over .slab{font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:#0f7a52; font-weight:750}
+  .tile .over .snext{font-size:10px; color:#93a0b1; margin-top:7px; letter-spacing:.03em}
+  .dchip{font-size:10.5px; font-weight:700; letter-spacing:.03em; border-radius:999px; padding:4px 8px;
+         white-space:nowrap}
+  .dchip.up{color:#b42318; background:#fdeceb}
+  .dchip.down{color:#0f7a52; background:#e6f4ec}
+  .dchip.flat{color:#64748b; background:#eef2f7}
+
   /* tiles with in-tile steppers */
   .tiles{display:grid; gap:10px; margin-top:16px}
   .tiles.two{grid-template-columns:1fr}
@@ -55,7 +71,7 @@
         touch-action:manipulation}
   .tile.pressing{background:var(--soft); transform:scale(.985)}
   .tile:active{background:var(--soft)}
-  .tiles.two .tile{min-height:184px}
+  .tiles.two .tile{min-height:210px}
   .tiles.many .tile{min-height:188px}
   .tile .top{display:flex; align-items:center; gap:7px}
   .tile .swatch{width:8px; height:8px; border-radius:3px}
@@ -357,7 +373,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v12</div>
+    <div class="kicker">Prototype · v13</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -383,7 +399,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v12';
+  const KEY = 'vicemaxxing.prototype.v13';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -649,15 +665,30 @@
       const evs = onDay(new Date(), v.id);
       const yes = onCal(new Date(Date.now() - DAY), v.id).length;
       const week = lastNDays(7).reduce((a,d) => a + onCal(d, v.id).length, 0) / 7;
-      const last = evs.length ? evs[evs.length-1].ts : null;
-      const sinceLast = last ? (Date.now() - new Date(last).getTime()) : 0;
       const head = hasPrice(v) ? money(spendOf(v, evs)) : 'no cost';
+      const streak = streakFor(v);
+      const dayDelta = week ? Math.round(((evs.length - week) / week) * 100) : 0;
+      const dcls = dayDelta > 0 ? 'up' : dayDelta < 0 ? 'down' : 'flat';
+      const dtxt = dayDelta === 0 ? 'on avg' : (dayDelta > 0 ? '▲ ' : '▼ ') + Math.abs(dayDelta) + '% vs avg';
+      const nextMile = [7,14,30,60,90,180,365].find(m => m > streak);
+      const over = streak >= 2 ? `
+        <div class="over">
+          <div class="snum">${streak}</div>
+          <div class="slab">day streak</div>
+          ${nextMile ? `<div class="snext">${nextMile - streak} to ${nextMile}</div>` : ''}
+        </div>` : '';
       return `
-        <div class="tile" data-vice="${v.id}">
-          <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
-            <span class="hold">hold</span></div>
-          <div class="tnumrow"><div class="tnum" style="margin-top:0">${evs.length}</div>${(() => { const s = streakFor(v); return s >= 2 ? `<span class="streak${s >= 7 ? ' long' : ''}">${s}d streak</span>` : ''; })()}</div>
-          <div class="sub">${head} · ${yes} yest<br>${trendHTML(v)} · 5d <b>${ma(v,5).toFixed(1)}</b> · avg <b>${week.toFixed(1)}</b></div>
+        <div class="tile ${streak >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
+          <div class="under" style="display:flex; flex-direction:column; justify-content:space-between; height:100%">
+            <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
+              <span class="hold">hold</span></div>
+            <div class="tnumrow">
+              <div class="tnum" style="margin-top:0">${evs.length}</div>
+              <span class="dchip ${dcls}">${dtxt}</span>
+            </div>
+            <div class="sub">${head} · ${yes} yest<br>5d <b>${ma(v,5).toFixed(1)}</b> ${trendHTML(v)} · avg <b>${week.toFixed(1)}</b></div>
+          </div>
+          ${over}
         </div>`;
     };
 
@@ -671,13 +702,11 @@
         <div class="eyebrow">Today</div>
         <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
         ${sleepRow()}
-        <div class="tiles two" style="margin-top:14px">
-          <div class="tile" data-vice="${v.id}" style="min-height:210px">
-            <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
-              <span class="hold">hold for details</span></div>
-            <div class="tnumrow"><div class="tnum" style="font-size:78px; margin-top:0">${evs.length}</div>${(() => { const s = streakFor(v); return s >= 2 ? `<span class="streak">${s}-day streak</span>` : ''; })()}</div>
-            <div class="sub">${hasPrice(v) ? money(spendOf(v, evs)) + ' today' : 'no cost'}<br>${yes} yesterday · avg <b>${week.toFixed(1)}</b></div>
-          </div>
+        <div class="tiles two" style="margin-top:14px; gap:0">${tile(v)}</div>
+        <div class="compare" style="margin-top:10px">
+          <span>Yesterday <b>${yes}</b></span>
+          <span>avg <b>${week.toFixed(1)}</b></span>
+          ${hasPrice(v) ? `<span><b>${money(spendOf(v, evs))}</b> today</span>` : ''}
         </div>
         <div class="tlwrap">${timeline()}</div>
       `;
