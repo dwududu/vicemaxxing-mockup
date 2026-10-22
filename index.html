@@ -49,16 +49,21 @@
   .tiles{display:grid; gap:10px; margin-top:16px}
   .tiles.two{grid-template-columns:1fr}
   .tiles.many{grid-template-columns:1fr 1fr}
-  .tile{border:1px solid var(--line); border-radius:20px; padding:14px 14px 12px; background:#fff;
-        cursor:pointer; display:flex; flex-direction:column; justify-content:space-between}
+  .tile{border:1px solid var(--line); border-radius:20px; padding:14px; background:#fff;
+        cursor:pointer; display:flex; flex-direction:column; justify-content:space-between;
+        transition:transform .08s ease, background .12s ease; user-select:none; -webkit-user-select:none;
+        touch-action:manipulation}
+  .tile.pressing{background:var(--soft); transform:scale(.985)}
   .tile:active{background:var(--soft)}
   .tiles.two .tile{min-height:184px}
   .tiles.many .tile{min-height:188px}
   .tile .top{display:flex; align-items:center; gap:7px}
   .tile .swatch{width:8px; height:8px; border-radius:3px}
   .tile .nm{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:650}
-  .tile .sub{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35;
-             overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
+  .tile .sub{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.35}
+  .tile .tnum{font-size:46px; font-weight:700; color:var(--ink); letter-spacing:-.04em; line-height:1;
+              margin-top:10px; font-variant-numeric:tabular-nums}
+  .tile .hold{margin-left:auto; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:#b6c0cd}
   .stepper{display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:10px;
            background:var(--soft); border-radius:999px; padding:5px 5px 5px 14px}
   .stepper button{width:42px; height:42px; border-radius:50%; border:0; background:#fff; color:var(--ink);
@@ -270,9 +275,9 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v6</div>
-    <h1>Four vices, one line.</h1>
-    <p>Each tile counts. A tap adds one, and today's line shows when.</p>
+    <div class="kicker">Prototype · v7</div>
+    <h1>Tap to add. Hold to look closer.</h1>
+    <p>The tile is the button. A short press adds one, a long press opens form, craving and trigger.</p>
   </div>
   <div>
     <p style="font-size:14px; color:var(--muted); margin:0 0 18px">Smoke, alcohol, fap, soda — switch any of them off in Settings.</p>
@@ -287,7 +292,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v6';
+  const KEY = 'vicemaxxing.prototype.v7';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -409,38 +414,55 @@
   function screenToday(){
     const act = active();
     const todayEvs = onDay(new Date()).filter(e => act.some(v => v.id === e.viceId));
-
     const spendOf = (v, evs) => evs.reduce((a,e) => a + evCost(e), 0);
 
-    const stepper = (v, big) => {
-      const n = onDay(new Date(), v.id).length;
-      return `<div class="${big ? 'bigstepper' : 'stepper'}">
-        <span class="sc">${n}</span>
-        <button class="plus" data-act="log" data-vice="${v.id}" aria-label="Log one">+</button>
-      </div>`;
-    };
+    // window starts three hours before the first entry of the day, not at midnight
+    function windowFor(){
+      const mins = d => { const x = new Date(d); return x.getHours()*60 + x.getMinutes(); };
+      const nowMin = mins(new Date());
+      if (!todayEvs.length){
+        return { from: Math.max(0, Math.min(nowMin, 480) - 60), to: Math.min(1440, nowMin + 60) };
+      }
+      const times = todayEvs.map(e => mins(e.ts));
+      const from = Math.max(0, Math.min(...times) - 180);
+      const to = Math.min(1440, Math.max(nowMin, ...times) + 30);
+      return { from, to };
+    }
 
-    // one lane per active vice, dots placed by time of day
     const timeline = () => {
-      if (!todayEvs.length) return `<div class="tl"><div class="tl-empty">Nothing logged yet today. Tap + on a tile.</div></div>`;
-      const mins = d => { const x = new Date(d); return x.getHours() * 60 + x.getMinutes(); };
-      const nowPct = (new Date().getHours() * 60 + new Date().getMinutes()) / 1440 * 100;
+      if (!todayEvs.length) return `<div class="tl"><div class="tl-empty">Nothing logged yet today. Tap a tile.</div></div>`;
+      const { from, to } = windowFor();
+      const span = Math.max(90, to - from);
+      const pct = m => ((m - from) / span * 100);
+      const mins = d => { const x = new Date(d); return x.getHours()*60 + x.getMinutes(); };
+      const nowPct = pct(mins(new Date()));
+      const hh = m => String(Math.floor(m/60)).padStart(2,'0');
+
       const lanes = act.map(v => {
         const evs = todayEvs.filter(e => e.viceId === v.id);
         if (!evs.length) return '';
         return `<div class="tl-lane"><div class="tl-base"></div>
           ${evs.map(e => `<button class="tl-dot" data-edit="${e.id}"
-             style="left:${(mins(e.ts)/1440*100).toFixed(2)}%;background:${v.colour}"
+             style="left:${pct(mins(e.ts)).toFixed(2)}%;background:${v.colour}"
              title="${E(v.name)} ${hhmm(new Date(e.ts))}"></button>`).join('')}
         </div>`;
       }).join('');
+
+      const step = span <= 210 ? 60 : span <= 420 ? 120 : 180;
+      const ticks = [];
+      for (let m = Math.ceil(from/60)*60; m <= to; m += step) ticks.push(m);
+      // always label the right-hand edge of the window so the end is not ambiguous
+      if (!ticks.length || to - ticks[ticks.length-1] > 20) ticks.push(to);
+
       return `<div class="tl">
-        <div class="tl-now" style="left:${nowPct.toFixed(2)}%"></div>
+        <div class="tl-now" style="left:${Math.max(0,Math.min(100,nowPct)).toFixed(2)}%"></div>
         ${lanes}
         <div class="tl-axis">
-          <span style="left:0%">00</span><span style="left:25%">06</span>
-          <span style="left:50%">12</span><span style="left:75%">18</span>
-          <span style="left:100%">24</span>
+          ${ticks.map((m,i) => {
+            const left = pct(m);
+            const anchor = left < 4 ? '0' : left > 96 ? '-100%' : '-50%';
+            return `<span style="left:${left.toFixed(1)}%;transform:translateX(${anchor})">${hh(m)}</span>`;
+          }).join('')}
         </div>
         <div class="tl-legend">${act.map(v => `<span><i style="background:${v.colour}"></i>${E(v.name)}</span>`).join('')}</div>
       </div>`;
@@ -449,15 +471,13 @@
     const tile = v => {
       const evs = onDay(new Date(), v.id);
       const yes = onDay(new Date(Date.now() - DAY), v.id).length;
-      const last = evs.length ? hhmm(new Date(evs[evs.length-1].ts)) : null;
       const head = hasPrice(v) ? money(spendOf(v, evs)) + ' today' : 'no cost';
       return `
-        <div class="tile" data-act="details" data-vice="${v.id}">
-          <div>
-            <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span></div>
-            <div class="sub">${head}<br>${yes} yesterday${last ? ' · last ' + last : ''}</div>
-          </div>
-          ${stepper(v, false)}
+        <div class="tile" data-vice="${v.id}">
+          <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
+            <span class="hold">hold</span></div>
+          <div class="tnum">${evs.length}</div>
+          <div class="sub">${head}<br>${yes} yesterday</div>
         </div>`;
     };
 
@@ -470,12 +490,13 @@
         <div class="status"><span>${clock()}</span><span>ViceMaxxing</span></div>
         <div class="eyebrow">Today</div>
         <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
-        <div class="unit" style="margin-top:22px">${breakdown(v, evs) || 'nothing logged yet today'}</div>
-        ${stepper(v, true)}
-        <div class="compare">
-          <span>Yesterday <b>${yes}</b></span>
-          <span>7-day avg <b>${week.toFixed(1)}</b></span>
-          ${hasPrice(v) ? `<span><b>${money(spendOf(v, evs))}</b> today</span>` : ''}
+        <div class="tiles two" style="margin-top:18px">
+          <div class="tile" data-vice="${v.id}" style="min-height:210px">
+            <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
+              <span class="hold">hold for details</span></div>
+            <div class="tnum" style="font-size:78px; margin-top:6px">${evs.length}</div>
+            <div class="sub">${hasPrice(v) ? money(spendOf(v, evs)) + ' today' : 'no cost'}<br>${yes} yesterday · avg <b>${week.toFixed(1)}</b></div>
+          </div>
         </div>
         <div class="listhead">Today · tap a mark to edit</div>
         ${timeline()}
@@ -487,7 +508,7 @@
       <div class="eyebrow">Today</div>
       <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
       <div class="tiles ${act.length === 2 ? 'two' : 'many'}">${act.map(tile).join('')}</div>
-      <div class="listhead">Today · tap a mark to edit</div>
+      <div class="listhead">Today · tap to add one, hold for details</div>
       ${timeline()}
     `;
   }
@@ -735,6 +756,45 @@
     document.getElementById('sheet').classList.remove('on');
     document.getElementById('veil').classList.remove('on');
   }
+
+  // short press on a tile adds one; long press opens details
+  let pressTimer = null, pressTile = null, longFired = false, px = 0, py = 0;
+
+  document.addEventListener('pointerdown', e => {
+    const tile = e.target.closest('.tile');
+    if (!tile) return;
+    pressTile = tile; longFired = false; px = e.clientX; py = e.clientY;
+    tile.classList.add('pressing');
+    pressTimer = setTimeout(() => {
+      longFired = true;
+      pressTile && pressTile.classList.remove('pressing');
+      openSheet(null, tile.dataset.vice);
+    }, 480);
+  });
+
+  document.addEventListener('pointermove', e => {
+    if (!pressTile) return;
+    if (Math.abs(e.clientX - px) > 12 || Math.abs(e.clientY - py) > 12){
+      clearTimeout(pressTimer); pressTile.classList.remove('pressing'); pressTile = null;
+    }
+  });
+
+  document.addEventListener('pointerup', e => {
+    if (!pressTile){ return; }
+    clearTimeout(pressTimer);
+    const tile = pressTile; pressTile = null;
+    tile.classList.remove('pressing');
+    if (longFired){ longFired = false; return; }
+    if (Math.abs(e.clientX - px) > 12 || Math.abs(e.clientY - py) > 12) return;
+    const ev = addEvent(tile.dataset.vice);
+    toast(hhmm(new Date(ev.ts)) + ' · ' + vice(tile.dataset.vice).name);
+  });
+
+  document.addEventListener('pointercancel', () => {
+    clearTimeout(pressTimer);
+    if (pressTile) pressTile.classList.remove('pressing');
+    pressTile = null;
+  });
 
   document.getElementById('veil').onclick = closeSheet;
 
