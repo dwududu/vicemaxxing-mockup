@@ -121,6 +121,26 @@
   .coach-bubble button{width:100%; height:44px; border:0; border-radius:12px; background:var(--ink); color:#fff;
                        font-family:inherit; font-size:15px; font-weight:650; cursor:pointer}
 
+
+  /* wake-time strip: touch only, no keyboard */
+  .timestrip{display:flex; gap:8px; overflow-x:auto; padding:6px 2px 10px; scroll-snap-type:x mandatory;
+             -webkit-overflow-scrolling:touch; scrollbar-width:none}
+  .timestrip::-webkit-scrollbar{display:none}
+  .tchip{flex:0 0 auto; scroll-snap-align:center; padding:11px 15px; border-radius:11px; border:0;
+         background:var(--chip); color:#3b4759; font-family:inherit; font-size:15.5px; font-weight:550;
+         font-variant-numeric:tabular-nums; cursor:pointer}
+  .tchip.on{background:var(--ink); color:#fff; font-weight:650}
+
+  /* timeline with lane labels instead of a legend */
+  .tl-lane{display:flex; align-items:center; gap:8px; height:26px; margin-bottom:2px}
+  .tl-lab{width:64px; flex:0 0 auto; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase;
+          color:#93a0b1; text-align:right; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .tl-track{position:relative; flex:1; height:26px}
+  .trend-up{color:#b42318; font-weight:650}
+  .trend-down{color:#0f7a52; font-weight:650}
+  .ma{font-size:11.5px; color:var(--muted)}
+  .ma b{color:var(--ink); font-weight:650}
+
   /* day timeline */
   .tl{position:relative; margin-top:10px; border:1px solid var(--line); border-radius:16px; padding:12px 12px 8px; background:#fff}
   .tl-lane{position:relative; height:26px; margin-bottom:2px}
@@ -129,8 +149,8 @@
   .tl-dot{position:absolute; top:50%; width:12px; height:12px; border-radius:50%; transform:translate(-50%,-50%);
           border:1.5px solid #fff; box-shadow:0 0 0 1px rgba(15,23,42,.06); cursor:pointer; padding:0}
   .tl-dot::after{content:''; position:absolute; inset:-9px}
-  .tl-now{position:absolute; top:0; bottom:22px; width:1.5px; background:#c7d2e4}
-  .tl-axis{position:relative; height:14px; margin-top:4px; font-size:9.5px; color:#a9b4c4}
+  .tl-nowwrap{position:absolute; left:72px; right:12px; top:12px; bottom:24px; pointer-events:none}
+  .tl-now{position:absolute; top:0; bottom:0; width:1.5px; background:#c7d2e4}
   .tl-axis span{position:absolute; transform:translateX(-50%)}
   .tl-empty{font-size:13px; color:#9aa5b6; padding:10px 2px 6px}
   .tl-legend{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font-size:11.5px; color:var(--muted)}
@@ -301,7 +321,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v8</div>
+    <div class="kicker">Prototype · v9</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -327,7 +347,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v8';
+  const KEY = 'vicemaxxing.prototype.v9';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -461,6 +481,20 @@
     return parts.map(x => x.n + ' ' + (x.n === 1 ? x.f.name.toLowerCase() : x.f.plural)).join(' · ');
   }
 
+  const ma = (v, days) => lastNDays(days).reduce((a,d) => a + onDay(d, v.id).length, 0) / days;
+  const trendOf = v => {
+    const a = ma(v, 5), b = ma(v, 20);
+    if (!b) return { pct: 0, dir: 0 };
+    const pct = Math.round(((a - b) / b) * 100);
+    return { pct, dir: pct > 2 ? 1 : pct < -2 ? -1 : 0 };
+  };
+  const trendHTML = v => {
+    const t = trendOf(v);
+    if (!t.dir) return `<span class="ma">flat</span>`;
+    const cls = t.dir > 0 ? 'trend-up' : 'trend-down';
+    return `<span class="${cls}">${t.dir > 0 ? '▲' : '▼'} ${Math.abs(t.pct)}%</span>`;
+  };
+
   const nightFor = (d) => state.nights[String(dayKey(d || new Date()))] || null;
 
   const sleepRow = () => {
@@ -498,38 +532,43 @@
       if (!todayEvs.length) return `<div class="tl"><div class="tl-empty">Nothing logged yet today. Tap a tile.</div></div>`;
       const { from, to } = windowFor();
       const span = Math.max(90, to - from);
-      const pct = m => ((m - from) / span * 100);
-      const mins = d => { const x = new Date(d); return x.getHours()*60 + x.getMinutes(); };
+      const pct = m => Math.max(0, Math.min(100, (m - from) / span * 100));
+      const mins = minsOfDay;
       const nowPct = pct(mins(new Date()));
       const hh = m => String(Math.floor(m/60)).padStart(2,'0');
 
       const lanes = act.map(v => {
         const evs = todayEvs.filter(e => e.viceId === v.id);
-        if (!evs.length) return '';
-        return `<div class="tl-lane"><div class="tl-base"></div>
-          ${evs.map(e => `<button class="tl-dot" data-edit="${e.id}"
-             style="left:${pct(mins(e.ts)).toFixed(2)}%;background:${v.colour}"
-             title="${E(v.name)} ${hhmm(new Date(e.ts))}"></button>`).join('')}
+        return `<div class="tl-lane">
+          <span class="tl-lab">${E(v.name)}</span>
+          <div class="tl-track"><div class="tl-base"></div>
+            ${evs.map(e => `<button class="tl-dot" data-edit="${e.id}"
+               style="left:${pct(mins(e.ts)).toFixed(2)}%;background:${v.colour}"
+               title="${E(v.name)} ${hhmm(new Date(e.ts))}"></button>`).join('')}
+          </div>
         </div>`;
       }).join('');
 
       const step = span <= 210 ? 60 : span <= 420 ? 120 : 180;
       const ticks = [];
       for (let m = Math.ceil(from/60)*60; m <= to; m += step) ticks.push(m);
-      // always label the right-hand edge of the window so the end is not ambiguous
-      if (!ticks.length || to - ticks[ticks.length-1] > 20) ticks.push(to);
+      if (!ticks.length || to - ticks[ticks.length-1] > 60) ticks.push(to);
 
       return `<div class="tl">
-        <div class="tl-now" style="left:${Math.max(0,Math.min(100,nowPct)).toFixed(2)}%"></div>
+        <div class="tl-nowwrap"><div class="tl-now" style="left:${nowPct.toFixed(2)}%"></div></div>
         ${lanes}
-        <div class="tl-axis">
-          ${ticks.map((m,i) => {
-            const left = pct(m);
-            const anchor = left < 4 ? '0' : left > 96 ? '-100%' : '-50%';
-            return `<span style="left:${left.toFixed(1)}%;transform:translateX(${anchor})">${hh(m)}</span>`;
-          }).join('')}
+        <div class="tl-lane" style="height:15px; margin-top:4px">
+          <span class="tl-lab"></span>
+          <div class="tl-track" style="height:15px">
+            ${ticks.map(m => {
+              const left = pct(m);
+              const anchor = left < 4 ? '0' : left > 96 ? '-100%' : '-50%';
+              const lab = (m % 60 === 0) ? hh(m) : hh(m) + ':' + String(m % 60).padStart(2,'0');
+              return `<span style="position:absolute; top:0; left:${left.toFixed(1)}%; transform:translateX(${anchor});
+                        font-size:9.5px; color:#a9b4c4">${lab}</span>`;
+            }).join('')}
+          </div>
         </div>
-        <div class="tl-legend">${act.map(v => `<span><i style="background:${v.colour}"></i>${E(v.name)}</span>`).join('')}</div>
       </div>`;
     };
 
@@ -545,7 +584,7 @@
           <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
             <span class="hold">hold</span></div>
           <div class="tnum">${evs.length}</div>
-          <div class="sub">${head} · ${yes} yest<br>avg <b>${week.toFixed(1)}</b>${last ? ' · last ' + hhmm(new Date(last)) : ''}</div>
+          <div class="sub">${head} · ${yes} yest<br>5d <b>${ma(v,5).toFixed(1)}</b> · 20d <b>${ma(v,20).toFixed(1)}</b> ${trendHTML(v)}</div>
         </div>`;
     };
 
@@ -832,28 +871,49 @@
     const key = String(dayKey(new Date()));
     const n = state.nights[key] || { woke:'07:30', quality:0, notes:'' };
     let quality = n.quality || 0;
+    let woke = n.woke || '07:30';
+
+    // 04:00 → 11:45 in 15-minute steps: swiped, never typed
+    const slots = [];
+    for (let m = 4*60; m <= 11*60 + 45; m += 15)
+      slots.push(String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'));
+
     const sheet = document.getElementById('sheet');
-    sheet.innerHTML = `
-      <div class="grab"></div>
-      <h3>Last night</h3>
-      <div class="fieldlabel">Woke up</div>
-      <input type="time" id="woke" value="${n.woke}">
-      <div class="fieldlabel">Sleep quality</div>
-      <div class="cravings">${[1,2,3,4,5].map(q =>
-        `<button class="cr ${quality===q?'on':''}" data-q="${q}">${q}</button>`).join('')}</div>
-      <div class="fieldlabel">Notes · optional</div>
-      <textarea id="notes" placeholder="Woke at 3, couldn't get back to sleep…">${E(n.notes || '')}</textarea>
-      <div class="rowbtns"><button class="cta" id="saveSleep">Save</button></div>`;
-    sheet.querySelectorAll('[data-q]').forEach(b => b.onclick = () => {
-      quality = +b.dataset.q;
-      sheet.querySelectorAll('[data-q]').forEach(x => x.classList.toggle('on', +x.dataset.q === quality));
-    });
-    document.getElementById('saveSleep').onclick = () => {
-      state.nights[key] = { woke: document.getElementById('woke').value || '07:30',
-                            quality, notes: document.getElementById('notes').value.trim() };
-      save(); closeSheet(); render(); toast('Last night saved');
+    const paint = () => {
+      sheet.innerHTML = `
+        <div class="grab"></div>
+        <h3>Last night</h3>
+        <div class="fieldlabel">Woke up</div>
+        <div class="timestrip" id="tstrip">${slots.map(t =>
+          `<button class="tchip ${t===woke?'on':''}" data-t="${t}">${t}</button>`).join('')}</div>
+        <div class="fieldlabel">Sleep quality</div>
+        <div class="cravings">${[1,2,3,4,5].map(q =>
+          `<button class="cr ${quality===q?'on':''}" data-q="${q}">${q}</button>`).join('')}</div>
+        <div class="fieldlabel">Notes · optional</div>
+        <textarea id="notes" placeholder="Woke at 3, couldn't get back to sleep…">${E(n.notes || '')}</textarea>
+        <div class="rowbtns"><button class="cta" id="saveSleep">Save</button></div>`;
+      const strip = document.getElementById('tstrip');
+      strip.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+        woke = b.dataset.t;
+        strip.querySelectorAll('[data-t]').forEach(x => x.classList.toggle('on', x.dataset.t === woke));
+        const el = strip.querySelector('[data-t="' + woke + '"]');
+        el && el.scrollIntoView({ inline:'center', block:'nearest', behavior:'smooth' });
+      });
+      strip.querySelectorAll('[data-q]').forEach(b => b.onclick = () => {});
+      sheet.querySelectorAll('[data-q]').forEach(b => b.onclick = () => {
+        quality = +b.dataset.q;
+        sheet.querySelectorAll('[data-q]').forEach(x => x.classList.toggle('on', +x.dataset.q === quality));
+      });
+      document.getElementById('saveSleep').onclick = () => {
+        state.nights[key] = { woke, quality, notes: document.getElementById('notes').value.trim() };
+        save(); closeSheet(); render(); toast('Last night saved · woke ' + woke);
+      };
+      const on = strip.querySelector('[data-t="' + woke + '"]');
+      if (on) setTimeout(() => on.scrollIntoView({ inline:'center', block:'nearest' }), 60);
     };
+
     document.getElementById('toast').classList.remove('on');
+    paint();
     sheet.classList.add('on');
     document.getElementById('veil').classList.add('on');
   }
