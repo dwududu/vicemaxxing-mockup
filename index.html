@@ -48,7 +48,7 @@
 
   .tile{position:relative; overflow:hidden}
   .tile.streaked{background:#f5f8fb; border-color:#e4ebf3}
-  .tile.streaked .under .mid{opacity:0}
+  .tile.streaked .under .mid, .tile.streaked .under .wbody{opacity:0}
   .tile.streaked .under .sub{opacity:0}
   .tile .over{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
               justify-content:center; gap:1px; pointer-events:none}
@@ -72,7 +72,7 @@
         touch-action:manipulation}
   .tile.pressing{background:var(--soft); transform:scale(.985)}
   .tile:active{background:var(--soft)}
-  .tiles.two .tile{min-height:210px}
+  .tiles.two .tile{min-height:0}
   .tiles.many .tile{min-height:188px}
   .tile .top{display:flex; align-items:center; gap:7px}
   .tile .swatch{width:8px; height:8px; border-radius:3px}
@@ -85,7 +85,14 @@
   .tile .mid{flex:1 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center;
              justify-content:center; gap:5px}
   .tile .mid .tnum{margin:0; text-align:center}
-  .tile .sub{text-align:center}
+  .tile .sub{text-align:left}
+  .wbody{flex:1 1 auto; min-height:0; display:flex; align-items:center; gap:16px}
+  .wleft{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:6px}
+  .wright{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px}
+  .mrow{display:flex; justify-content:space-between; gap:10px; font-size:11.5px; color:var(--muted)}
+  .mrow b{color:var(--ink); font-weight:650; font-variant-numeric:tabular-nums}
+  .mrow .up{color:#b42318}
+  .mrow .down{color:#0f7a52}
   .streak{font-size:9.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#0f7a52;
           background:#e6f4ec; border-radius:999px; padding:5px 9px; white-space:nowrap}
   .streak.long{background:#d6efdf}
@@ -356,7 +363,12 @@
   .screen.scroll{overflow-y:auto; -webkit-overflow-scrolling:touch}
   nav{position:static; transform:none; width:100%; height:74px; flex:0 0 auto;
       border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom)}
-  .tiles{flex:0 1 auto}
+  .tiles{flex:1 1 auto; min-height:0}
+  .tiles.many{grid-auto-rows:1fr}
+  .tiles.two{grid-template-columns:1fr; grid-auto-rows:1fr}
+  .tile{min-height:0}
+  .tlwrap{flex:0 0 auto; height:190px; margin-top:8px}
+  .tl{height:100%}
   .tlwrap{flex:1 1 auto; min-height:0; display:flex; flex-direction:column}
   .tl{flex:1 1 auto; min-height:0; overflow:hidden; margin-top:8px; display:flex; flex-direction:column; justify-content:center}
   .panel-scroll{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px}
@@ -667,32 +679,80 @@
       </div>`;
     };
 
-    const tile = v => {
+    const fsFor = (n, big) => {
+      const base = big ? 100 : 62;
+      const len = String(n).length;
+      return (len <= 1 ? base : len === 2 ? base * 0.82 : base * 0.64) + 'px';
+    };
+
+    const streakOver = v => {
+      const s = streakFor(v);
+      if (s < 2) return '';
+      return `<div class="over"><div class="snum">${s}</div><div class="slab">day streak</div></div>`;
+    };
+
+    const dayDeltaOf = (v, todayCount, week) => {
+      const pct = week ? Math.round(((todayCount - week) / week) * 100) : 0;
+      return { pct, cls: pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat',
+               txt: pct === 0 ? '—' : (pct > 0 ? '▲ ' : '▼ ') + Math.abs(pct) + '%' };
+    };
+
+    // 3–4 vices: square tiles, count and % centred, metrics left-aligned beneath
+    const tileGrid = v => {
       const evs = onDay(new Date(), v.id);
       const yes = onCal(new Date(Date.now() - DAY), v.id).length;
       const week = lastNDays(7).reduce((a,d) => a + onCal(d, v.id).length, 0) / 7;
       const head = hasPrice(v) ? money(spendOf(v, evs)) : 'no cost';
-      const streak = streakFor(v);
-      const dayDelta = week ? Math.round(((evs.length - week) / week) * 100) : 0;
-      const dcls = dayDelta > 0 ? 'up' : dayDelta < 0 ? 'down' : 'flat';
-      const dtxt = dayDelta === 0 ? '—' : (dayDelta > 0 ? '▲ ' : '▼ ') + Math.abs(dayDelta) + '%';
-      const over = streak >= 2 ? `
-        <div class="over">
-          <div class="snum">${streak}</div>
-          <div class="slab">day streak</div>
-        </div>` : '';
+      const d = dayDeltaOf(v, evs.length, week);
+      const s = streakFor(v);
       return `
-        <div class="tile ${streak >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
+        <div class="tile ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
           <div class="under">
             <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
               <span class="hold">hold</span></div>
             <div class="mid">
-              <div class="tnum">${evs.length}</div>
-              <span class="dchip ${dcls}">${dtxt}</span>
+              <div class="tnum" style="font-size:${fsFor(evs.length, false)}">${evs.length}</div>
+              <span class="dchip ${d.cls}">${d.txt}</span>
             </div>
             <div class="sub">${head} · ${yes} yest<br>5d <b>${ma(v,5).toFixed(1)}</b> ${trendHTML(v)} · avg <b>${week.toFixed(1)}</b></div>
           </div>
-          ${over}
+          ${streakOver(v)}
+        </div>`;
+    };
+
+    // 1–2 vices: count and % on the left, a fuller readout on the right
+    const tileWide = (v, big) => {
+      const evs = onDay(new Date(), v.id);
+      const yes = onCal(new Date(Date.now() - DAY), v.id).length;
+      const week = lastNDays(7).reduce((a,d) => a + onCal(d, v.id).length, 0) / 7;
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const monthEvs = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= monthStart);
+      const monthSpend = monthEvs.reduce((a,e) => a + evCost(e), 0);
+      const d = dayDeltaOf(v, evs.length, week);
+      const s = streakFor(v);
+      const last = evs.length ? hhmm(new Date(evs[evs.length-1].ts)) : '—';
+      return `
+        <div class="tile ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}" ${big ? 'style="min-height:0"' : ''}>
+          <div class="under">
+            <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
+              <span class="hold">hold</span></div>
+            <div class="wbody">
+              <div class="wleft">
+                <div class="tnum" style="font-size:${fsFor(evs.length, true)}">${evs.length}</div>
+                <span class="dchip ${d.cls}">${d.txt}</span>
+              </div>
+              <div class="wright">
+                <div class="mrow"><span>Today</span><b>${hasPrice(v) ? money(spendOf(v, evs)) : 'no cost'}</b></div>
+                <div class="mrow"><span>This month</span><b>${hasPrice(v) ? money(Math.round(monthSpend)) : '—'}</b></div>
+                <div class="mrow"><span>Month count</span><b>${monthEvs.length}</b></div>
+                <div class="mrow"><span>Yesterday</span><b>${yes}</b></div>
+                <div class="mrow"><span>5-day</span><b>${ma(v,5).toFixed(1)}</b></div>
+                <div class="mrow"><span>Average</span><b>${week.toFixed(1)}</b></div>
+                <div class="mrow"><span>Last</span><b>${last}</b></div>
+              </div>
+            </div>
+          </div>
+          ${streakOver(v)}
         </div>`;
     };
 
@@ -706,12 +766,7 @@
         <div class="eyebrow">Today</div>
         <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
         ${sleepRow()}
-        <div class="tiles two" style="margin-top:14px; gap:0">${tile(v)}</div>
-        <div class="compare" style="margin-top:10px">
-          <span>Yesterday <b>${yes}</b></span>
-          <span>avg <b>${week.toFixed(1)}</b></span>
-          ${hasPrice(v) ? `<span><b>${money(spendOf(v, evs))}</b> today</span>` : ''}
-        </div>
+        <div class="tiles two" style="margin-top:14px; gap:0">${tileWide(v, true)}</div>
         <div class="tlwrap">${timeline()}</div>
       `;
     }
@@ -722,7 +777,7 @@
       <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
       ${sleepRow()}
       <div class="eyebrow" style="margin-top:12px">Day started ${hhmm(dayStart(new Date()))} · ${(Math.max(0,(new Date() - dayStart(new Date()))/3600000)).toFixed(0)}h so far</div>
-      <div class="tiles ${act.length === 2 ? 'two' : 'many'}" style="margin-top:10px">${act.map(tile).join('')}</div>
+      <div class="tiles ${act.length === 2 ? 'two' : 'many'}" style="margin-top:10px">${act.map(v => act.length === 2 ? tileWide(v, false) : tileGrid(v)).join('')}</div>
       <div class="tlwrap">${timeline()}</div>
     `;
   }
