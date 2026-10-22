@@ -59,23 +59,23 @@
   .tile .nm{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:650}
   .tile .sub{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.35;
              overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical}
-  .stepper{display:flex; align-items:center; gap:6px; margin-top:10px; background:var(--soft);
-           border-radius:999px; padding:5px}
+  .stepper{display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:10px;
+           background:var(--soft); border-radius:999px; padding:5px 5px 5px 14px}
   .stepper button{width:42px; height:42px; border-radius:50%; border:0; background:#fff; color:var(--ink);
                   font-size:21px; line-height:1; font-family:inherit; cursor:pointer; flex:0 0 auto;
                   box-shadow:0 1px 2px rgba(15,23,42,.08)}
   .stepper button:active{transform:scale(.94)}
   .stepper button.minus{color:#94a3b8}
   .stepper button.plus{background:var(--ink); color:#fff; box-shadow:none}
-  .stepper .sc{flex:1; text-align:center; font-size:25px; font-weight:700; color:var(--ink);
+  .stepper .sc{font-size:26px; font-weight:700; color:var(--ink);
                font-variant-numeric:tabular-nums; letter-spacing:-.02em}
-  .bigstepper{display:flex; align-items:center; gap:8px; margin-top:22px; background:var(--soft);
-              border-radius:999px; padding:6px}
+  .bigstepper{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:20px;
+              background:var(--soft); border-radius:999px; padding:8px 8px 8px 22px}
   .bigstepper button{width:52px; height:52px; border-radius:50%; border:0; background:#fff; color:var(--ink);
                      font-size:25px; font-family:inherit; cursor:pointer; flex:0 0 auto; box-shadow:0 1px 2px rgba(15,23,42,.08)}
   .bigstepper button.plus{background:var(--ink); color:#fff; box-shadow:none}
   .bigstepper button.minus{color:#94a3b8}
-  .bigstepper .sc{flex:1; text-align:center; font-size:34px; font-weight:700; color:var(--ink);
+  .bigstepper .sc{font-size:38px; font-weight:700; color:var(--ink);
                   font-variant-numeric:tabular-nums; letter-spacing:-.03em}
 
   /* three-or-more compact rows */
@@ -88,6 +88,22 @@
   .vrow .vname{font-size:15px; font-weight:600; color:var(--ink)}
   .vrow .vsub{font-size:12.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
   .vrow .vcount{font-size:26px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; letter-spacing:-.03em}
+
+
+  /* day timeline */
+  .tl{position:relative; margin-top:10px; border:1px solid var(--line); border-radius:16px; padding:12px 12px 8px; background:#fff}
+  .tl-lane{position:relative; height:26px; margin-bottom:2px}
+  .tl-lane:last-of-type{margin-bottom:0}
+  .tl-base{position:absolute; left:0; right:0; top:50%; height:1px; background:#eef2f7}
+  .tl-dot{position:absolute; top:50%; width:12px; height:12px; border-radius:50%; transform:translate(-50%,-50%);
+          border:1.5px solid #fff; box-shadow:0 0 0 1px rgba(15,23,42,.06); cursor:pointer; padding:0}
+  .tl-dot::after{content:''; position:absolute; inset:-9px}
+  .tl-now{position:absolute; top:0; bottom:22px; width:1.5px; background:#c7d2e4}
+  .tl-axis{position:relative; height:14px; margin-top:4px; font-size:9.5px; color:#a9b4c4}
+  .tl-axis span{position:absolute; transform:translateX(-50%)}
+  .tl-empty{font-size:13px; color:#9aa5b6; padding:10px 2px 6px}
+  .tl-legend{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font-size:11.5px; color:var(--muted)}
+  .tl-legend i{width:8px; height:8px; border-radius:2px; display:inline-block; margin-right:5px; vertical-align:middle}
 
   .listhead{margin:26px 0 8px; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
             color:var(--muted); font-weight:650}
@@ -254,9 +270,9 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v5</div>
-    <h1>Four vices, one thumb.</h1>
-    <p>Each tile carries its own counter. Press + when you do it, − if you pressed too soon.</p>
+    <div class="kicker">Prototype · v6</div>
+    <h1>Four vices, one line.</h1>
+    <p>Each tile counts. A tap adds one, and today's line shows when.</p>
   </div>
   <div>
     <p style="font-size:14px; color:var(--muted); margin:0 0 18px">Smoke, alcohol, fap, soda — switch any of them off in Settings.</p>
@@ -271,7 +287,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v5';
+  const KEY = 'vicemaxxing.prototype.v6';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -392,31 +408,54 @@
 
   function screenToday(){
     const act = active();
-    const allToday = onDay(new Date())
-      .filter(e => act.some(v => v.id === e.viceId))
-      .sort((a,b) => new Date(b.ts) - new Date(a.ts));
+    const todayEvs = onDay(new Date()).filter(e => act.some(v => v.id === e.viceId));
 
     const spendOf = (v, evs) => evs.reduce((a,e) => a + evCost(e), 0);
-    const moneyBit = (v, evs) => hasPrice(v) ? ` · <b>${money(spendOf(v, evs))}</b>` : '';
 
     const stepper = (v, big) => {
       const n = onDay(new Date(), v.id).length;
-      const cls = big ? 'bigstepper' : 'stepper';
-      return `<div class="${cls}">
-        <button class="minus" data-act="minus" data-vice="${v.id}" aria-label="Remove last">&minus;</button>
-        <div class="sc">${n}</div>
+      return `<div class="${big ? 'bigstepper' : 'stepper'}">
+        <span class="sc">${n}</span>
         <button class="plus" data-act="log" data-vice="${v.id}" aria-label="Log one">+</button>
+      </div>`;
+    };
+
+    // one lane per active vice, dots placed by time of day
+    const timeline = () => {
+      if (!todayEvs.length) return `<div class="tl"><div class="tl-empty">Nothing logged yet today. Tap + on a tile.</div></div>`;
+      const mins = d => { const x = new Date(d); return x.getHours() * 60 + x.getMinutes(); };
+      const nowPct = (new Date().getHours() * 60 + new Date().getMinutes()) / 1440 * 100;
+      const lanes = act.map(v => {
+        const evs = todayEvs.filter(e => e.viceId === v.id);
+        if (!evs.length) return '';
+        return `<div class="tl-lane"><div class="tl-base"></div>
+          ${evs.map(e => `<button class="tl-dot" data-edit="${e.id}"
+             style="left:${(mins(e.ts)/1440*100).toFixed(2)}%;background:${v.colour}"
+             title="${E(v.name)} ${hhmm(new Date(e.ts))}"></button>`).join('')}
+        </div>`;
+      }).join('');
+      return `<div class="tl">
+        <div class="tl-now" style="left:${nowPct.toFixed(2)}%"></div>
+        ${lanes}
+        <div class="tl-axis">
+          <span style="left:0%">00</span><span style="left:25%">06</span>
+          <span style="left:50%">12</span><span style="left:75%">18</span>
+          <span style="left:100%">24</span>
+        </div>
+        <div class="tl-legend">${act.map(v => `<span><i style="background:${v.colour}"></i>${E(v.name)}</span>`).join('')}</div>
       </div>`;
     };
 
     const tile = v => {
       const evs = onDay(new Date(), v.id);
       const yes = onDay(new Date(Date.now() - DAY), v.id).length;
+      const last = evs.length ? hhmm(new Date(evs[evs.length-1].ts)) : null;
+      const head = hasPrice(v) ? money(spendOf(v, evs)) + ' today' : 'no cost';
       return `
         <div class="tile" data-act="details" data-vice="${v.id}">
           <div>
             <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span></div>
-            <div class="sub">${breakdown(v, evs) || 'nothing yet'}${moneyBit(v, evs)}<br>${yes} yesterday</div>
+            <div class="sub">${head}<br>${yes} yesterday${last ? ' · last ' + last : ''}</div>
           </div>
           ${stepper(v, false)}
         </div>`;
@@ -438,15 +477,8 @@
           <span>7-day avg <b>${week.toFixed(1)}</b></span>
           ${hasPrice(v) ? `<span><b>${money(spendOf(v, evs))}</b> today</span>` : ''}
         </div>
-        <div class="listhead">Today</div>
-        ${allToday.length ? allToday.map(e => {
-          const vv = vice(e.viceId), f = form(vv, e.formId);
-          return `<button class="entry" data-edit="${e.id}">
-            <span class="t">${hhmm(new Date(e.ts))}</span>
-            <span class="vd" style="background:${vv.colour}"></span>
-            <span class="tag">${E(f.name)}${e.trigger ? ' · ' + E(e.trigger) : ''}</span>
-          </button>`;
-        }).join('') : `<div class="empty">Nothing logged yet today. One tap when you do.</div>`}
+        <div class="listhead">Today · tap a mark to edit</div>
+        ${timeline()}
       `;
     }
 
@@ -455,15 +487,8 @@
       <div class="eyebrow">Today</div>
       <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
       <div class="tiles ${act.length === 2 ? 'two' : 'many'}">${act.map(tile).join('')}</div>
-      <div class="listhead">Today · tap a tile for form, craving, trigger</div>
-      ${allToday.length ? allToday.map(e => {
-        const vv = vice(e.viceId), f = form(vv, e.formId);
-        return `<button class="entry" data-edit="${e.id}">
-          <span class="t">${hhmm(new Date(e.ts))}</span>
-          <span class="vd" style="background:${vv.colour}"></span>
-          <span class="tag">${E(vv.name)} · ${E(f.name)}${e.trigger ? ' · ' + E(e.trigger) : ''}</span>
-        </button>`;
-      }).join('') : `<div class="empty">Nothing logged yet today. Tap + on a tile.</div>`}
+      <div class="listhead">Today · tap a mark to edit</div>
+      ${timeline()}
     `;
   }
 
