@@ -669,13 +669,11 @@
       const streak = streakFor(v);
       const dayDelta = week ? Math.round(((evs.length - week) / week) * 100) : 0;
       const dcls = dayDelta > 0 ? 'up' : dayDelta < 0 ? 'down' : 'flat';
-      const dtxt = dayDelta === 0 ? 'on avg' : (dayDelta > 0 ? '▲ ' : '▼ ') + Math.abs(dayDelta) + '% vs avg';
-      const nextMile = [7,14,30,60,90,180,365].find(m => m > streak);
+      const dtxt = dayDelta === 0 ? '—' : (dayDelta > 0 ? '▲ ' : '▼ ') + Math.abs(dayDelta) + '%';
       const over = streak >= 2 ? `
         <div class="over">
           <div class="snum">${streak}</div>
           <div class="slab">day streak</div>
-          ${nextMile ? `<div class="snext">${nextMile - streak} to ${nextMile}</div>` : ''}
         </div>` : '';
       return `
         <div class="tile ${streak >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
