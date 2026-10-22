@@ -52,7 +52,7 @@
   .tile{border:1px solid var(--line); border-radius:20px; padding:14px 14px 12px; background:#fff;
         cursor:pointer; display:flex; flex-direction:column; justify-content:space-between}
   .tile:active{background:var(--soft)}
-  .tiles.two .tile{min-height:230px}
+  .tiles.two .tile{min-height:184px}
   .tiles.many .tile{min-height:188px}
   .tile .top{display:flex; align-items:center; gap:7px}
   .tile .swatch{width:8px; height:8px; border-radius:3px}
@@ -392,7 +392,9 @@
 
   function screenToday(){
     const act = active();
-    const allToday = onDay(new Date()).sort((a,b) => new Date(b.ts) - new Date(a.ts));
+    const allToday = onDay(new Date())
+      .filter(e => act.some(v => v.id === e.viceId))
+      .sort((a,b) => new Date(b.ts) - new Date(a.ts));
 
     const spendOf = (v, evs) => evs.reduce((a,e) => a + evCost(e), 0);
     const moneyBit = (v, evs) => hasPrice(v) ? ` · <b>${money(spendOf(v, evs))}</b>` : '';
