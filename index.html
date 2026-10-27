@@ -405,8 +405,8 @@
   .formrow .cur{font-size:12.5px; color:#9aa5b6}
   .formhead{display:grid; gap:6px; align-items:center; padding:2px 0 6px; font-size:9px; letter-spacing:.06em;
             text-transform:uppercase; color:#aab4c2; font-weight:650}
-  .formhead span{text-align:right}
-  .formhead span:first-child{text-align:left}
+  .formhead span{text-align:right; padding-right:5px}
+  .formhead span:first-child{text-align:left; padding-right:0}
   .frow{display:grid; gap:6px; align-items:center; padding:5px 0; border-bottom:1px solid #f4f7fb}
   .frow .fn{min-width:0; font-size:12.5px; color:var(--body); overflow:hidden;
             text-overflow:ellipsis; white-space:nowrap}
@@ -1144,10 +1144,10 @@
         const attrs = v.forms.reduce((m, f) => Math.max(m, (f.attrs || []).length), 0);
         const timed = v.forms.some(f => f.timed);
         const attrList = (v.forms.find(f => (f.attrs||[]).length) || {attrs:[]}).attrs;
-        const cols = `minmax(0,1fr) ${priced ? '56px 44px ' : ''}${timed ? '46px ' : ''}${'54px '.repeat(attrs)}`;
+        const cols = `minmax(0,1fr) ${priced ? '50px 38px ' : ''}${timed ? '40px ' : ''}${'46px '.repeat(attrs)}`;
         const head = `<div class="formhead" style="grid-template-columns:${cols}">
-            <span>Form</span>${priced ? '<span>HK$</span><span>units</span>' : ''}${timed ? '<span>min</span>' : ''}
-            ${attrList.map(a => `<span>${a.unit}</span>`).join('')}
+            <span>Form</span>${priced ? '<span>HK$</span><span>pack</span>' : ''}${timed ? '<span>min</span>' : ''}
+            ${attrList.map(a => `<span>${({nic:'nic',tar:'tar',alc:'alc',cal:'kcal',sug:'sugar',caf:'caff'})[a.k] || a.unit}</span>`).join('')}
           </div>`;
         const rows = v.forms.map(f => `
           <div class="frow" style="grid-template-columns:${cols}">
