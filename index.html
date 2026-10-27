@@ -77,7 +77,10 @@
   .tiles.rows2 .tile{display:flex; align-items:center; gap:14px; padding:14px}
   .lcol{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:5px}
   .rcol{flex:1 1 auto; min-width:0}
-  .rstats{font-size:11px; color:var(--muted); line-height:1.45; white-space:normal; overflow-wrap:anywhere}
+  .rstats{font-size:11px; color:var(--muted); line-height:1.45; white-space:normal}
+  .st{white-space:nowrap}
+  .rstats.col{display:flex; flex-direction:column; gap:1px}
+  .rstats.col .st{display:block}
   .tile .over .sname{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#93a0b1;
                      font-weight:700; margin-bottom:2px}
   .tile.row .over .snum{font-size:36px}
@@ -776,6 +779,9 @@
     return bits;
   };
 
+  const statHTML = bits => bits.map(b => `<span class="st">${b}</span>`).join(' · ');
+  const statCol = bits => bits.map(b => `<span class="st">${b}</span>`).join('');
+
   const nightFor = (d) => state.nights[ymd(d || new Date())] || null;
 
   const sleepRow = () => {
@@ -881,7 +887,7 @@
     const tileSquare = (v, limit) => {
       const evs = onDay(new Date(), v.id);
       const s = streakFor(v);
-      const stats = statBits(v).slice(0, limit).join(' · ');
+      const stats = statHTML(statBits(v).slice(0, limit));
       return `
         <div class="tile ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
           <div class="under">
@@ -911,7 +917,7 @@
             <div class="rcol">
               <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}
                 ${s >= 2 ? `<span class="streak">${s}d streak</span>` : ''}</div>
-              <div class="rstats">${statBits(v).slice(0, 5).join(' · ')}</div>
+              <div class="rstats col">${statBits(v).slice(0, 5).map(b => `<span class="st">${b}</span>`).join('')}</div>
             </div>
           </div>
           ${streakOver(v, true)}
@@ -926,7 +932,7 @@
         <div class="tile row ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
           <div class="rtop">
             <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}</div>
-            <div class="rsub" style="white-space:normal; overflow:visible; text-overflow:clip">${statBits(v).slice(0, limit).join(' · ')}</div>
+            <div class="rsub" style="white-space:normal; overflow:visible; text-overflow:clip">${statHTML(statBits(v).slice(0, limit))}</div>
           </div>
           <div class="rnum">${evs.length}</div>
           ${chipFor(v)}
@@ -1123,7 +1129,14 @@
     return `
       <div class="status"><span>${clock()}</span><span>Settings</span></div>
       <div class="eyebrow">Settings</div>
-      <div class="date" style="margin-bottom:2px">Vices</div>
+      <div class="srow" style="margin-top:12px; padding-top:0; border-top:0">
+        <div><div class="lab">Theme</div><div class="sub">dark for the evening</div></div>
+        <div class="seg2" style="margin:0; width:132px">
+          <button data-theme-set="light" class="${(state.theme||'light')==='light'?'on':''}">Light</button>
+          <button data-theme-set="dark" class="${state.theme==='dark'?'on':''}">Dark</button>
+        </div>
+      </div>
+      <div class="date" style="margin-bottom:2px; margin-top:10px">Vices</div>
       <div class="note" style="margin-top:6px">Switch on what you want to track. Prices are per form, so a pack, a pod and a can can all cost different amounts. A price of zero hides every money figure for that vice.</div>
       ${state.vices.map(viceBlock).join('')}
       <div class="srow" style="margin-top:22px">
@@ -1132,13 +1145,6 @@
       </div>
       ${state.reminder ? `<div class="srow"><div class="lab">Reminder time</div>
         <input type="time" id="rtime" value="${state.reminderTime}"></div>` : ''}
-      <div class="srow" style="margin-top:18px">
-        <div><div class="lab">Theme</div><div class="sub">dark for the evening</div></div>
-        <div class="seg2" style="margin:0; width:132px">
-          <button data-theme-set="light" class="${(state.theme||'light')==='light'?'on':''}">Light</button>
-          <button data-theme-set="dark" class="${state.theme==='dark'?'on':''}">Dark</button>
-        </div>
-      </div>
       <button class="ghostbtn" id="exportCsv">Export CSV</button>
       <button class="ghostbtn" id="exportJson">Export JSON</button>
       <button class="danger" id="wipe">Delete everything</button>
