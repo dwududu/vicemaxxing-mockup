@@ -91,10 +91,12 @@
                      font-weight:700; margin-bottom:2px}
   .tile.row .over .snum{font-size:36px}
   .tile.row .over .slab{font-size:9px}
-  .tile.row.streaked .rtop, .tile.row.streaked .rnum, .tile.row.streaked .dchip{opacity:0}
+  .tile.row.streaked{background:#f4f9f6}
   .tiles.rows .tile{flex:1 1 0; min-height:0; padding:8px 14px; display:flex; align-items:center;
                     gap:12px; flex-direction:row}
   .tiles.rows .tile .under{display:none}
+  .streakline{color:#0f7a52; font-weight:700; font-size:13px; letter-spacing:.01em}
+  [data-theme="dark"] .streakline{color:#5fd39a}
   .rtop{flex:1 1 auto; min-width:0}
   .rname{display:flex; align-items:center; gap:7px; font-size:13.5px; font-weight:650; color:var(--ink)}
   .rsub{font-size:10.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -476,6 +478,7 @@
   [data-theme="dark"] .dchip.flat{background:#1b2431; color:var(--muted)}
   [data-theme="dark"] .streak,[data-theme="dark"] .streak.long{background:#12301f; color:#5fd39a}
   [data-theme="dark"] .tile.streaked{background:#0f1620; border-color:#1d2734}
+  [data-theme="dark"] .tile.row.streaked{background:#0f1a15}
   [data-theme="dark"] .tl-dot{border-color:#111926; box-shadow:0 0 0 1px rgba(0,0,0,.4)}
   [data-theme="dark"] .tl-base{background:#1d2734}
   [data-theme="dark"] .tl-now{background:#3a4a60}
@@ -920,11 +923,11 @@
         <div class="tile ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
           <div class="under">
             <div class="dbox l">
+              <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}</div>
               <div class="tnum" style="font-size:${fsFor(evs.length, true)}">${evs.length}</div>
               ${chipFor(v)}
             </div>
             <div class="dbox r">
-              <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}</div>
               <div class="rstats col">${statBits(v).slice(0, 5).map(b => `<span class="st">${b}</span>`).join('')}</div>
             </div>
           </div>
@@ -940,11 +943,11 @@
         <div class="tile row ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
           <div class="rtop">
             <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}</div>
-            <div class="rsub" style="white-space:normal; overflow:visible; text-overflow:clip">${statHTML(statBits(v).slice(0, limit))}</div>
+            <div class="rsub" style="white-space:normal; overflow:visible; text-overflow:clip">${
+              s >= 2 ? `<span class="streakline">${s} day streak</span>` : statHTML(statBits(v).slice(0, limit))
+            }</div>
           </div>
-          <div class="rnum">${evs.length}</div>
-          ${chipFor(v)}
-          ${streakOver(v, true)}
+          ${s >= 2 ? '' : `<div class="rnum">${evs.length}</div>${chipFor(v)}`}
         </div>`;
     };
 
