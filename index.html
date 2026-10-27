@@ -416,9 +416,9 @@
   .tiles.many{grid-auto-rows:minmax(0,1fr); grid-template-rows:repeat(2,minmax(0,1fr))}
   .tiles.two{grid-template-columns:1fr; grid-auto-rows:1fr}
   .tile, .tiles.many .tile, .tiles.two .tile{min-height:0; overflow:hidden}
-  .tlwrap{flex:0 0 auto; height:150px; margin-top:6px}
+  .tlwrap{flex:0 0 auto; height:150px; display:flex; flex-direction:column; justify-content:center; margin:12px 0 4px}
+  .tl{flex:0 0 auto; height:150px; margin:0}
   .tiles.compact + .tlwrap{height:150px}
-  .tl{height:100%}
   .panel-scroll{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px}
   .cal{flex:0 0 auto}
   .cell{aspect-ratio:auto; height:38px}
@@ -427,6 +427,67 @@
   .hero-num{margin-top:14px}
   .hero-num b{font-size:44px}
   .segwrap, .seg, .seg2{flex:0 0 auto}
+
+  /* ---- dark theme ---- */
+  [data-theme="dark"]{
+    --ink:#e9eef6; --body:#c2cbd8; --muted:#8a96a8; --line:#242d3a; --soft:#141b25;
+    --chip:#1b2431; --accent:#7aa2ff;
+  }
+  [data-theme="dark"] body{background:#070b11}
+  [data-theme="dark"] #app{background:#0b1119}
+  [data-theme="dark"] .tile,
+  [data-theme="dark"] .tl,
+  [data-theme="dark"] .sheet,
+  [data-theme="dark"] .sleeprow,
+  [data-theme="dark"] .card,
+  [data-theme="dark"] .totalrow,
+  [data-theme="dark"] .vcard,
+  [data-theme="dark"] .coach-bubble{background:#111926; border-color:var(--line)}
+  [data-theme="dark"] nav{background:rgba(11,17,25,.97); border-top-color:var(--line)}
+  [data-theme="dark"] .veil{background:rgba(0,0,0,.55)}
+  [data-theme="dark"] input[type=time],
+  [data-theme="dark"] input[type=text],
+  [data-theme="dark"] input[type=number],
+  [data-theme="dark"] textarea,
+  [data-theme="dark"] .dial{background:#0f1720; border-color:var(--line)}
+  [data-theme="dark"] .dial::before{background:#0f1720; border-color:var(--line)}
+  [data-theme="dark"] .dial button{background:#19222f; color:var(--ink); box-shadow:none}
+  [data-theme="dark"] .dial .hd.on,[data-theme="dark"] .dial .md.on{background:#2b6cff; color:#fff}
+  [data-theme="dark"] .cr{background:#19222f; border-color:var(--line); color:var(--body)}
+  [data-theme="dark"] .cr.on{background:#e9eef6; color:#0b1119; border-color:#e9eef6}
+  [data-theme="dark"] .chip{background:var(--chip); color:var(--body)}
+  [data-theme="dark"] .chip.on{background:#1d2f5c; color:#9dbcff}
+  [data-theme="dark"] .tchip{background:var(--chip); color:var(--body)}
+  [data-theme="dark"] .tchip.on{background:#e9eef6; color:#0b1119}
+  [data-theme="dark"] .seg,[data-theme="dark"] .seg2{background:#151d28}
+  [data-theme="dark"] .seg button.on,[data-theme="dark"] .seg2 button.on{background:#222d3c; color:var(--ink); box-shadow:none}
+  [data-theme="dark"] .dchip.up{background:#3a1d1b; color:#ff8f82}
+  [data-theme="dark"] .dchip.down{background:#12301f; color:#5fd39a}
+  [data-theme="dark"] .dchip.flat{background:#1b2431; color:var(--muted)}
+  [data-theme="dark"] .streak,[data-theme="dark"] .streak.long{background:#12301f; color:#5fd39a}
+  [data-theme="dark"] .tile.streaked{background:#0f1620; border-color:#1d2734}
+  [data-theme="dark"] .tl-dot{border-color:#111926; box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+  [data-theme="dark"] .tl-base{background:#1d2734}
+  [data-theme="dark"] .tl-now{background:#3a4a60}
+  [data-theme="dark"] .cell{background:#111926; border-color:#1a2430; color:var(--body)}
+  [data-theme="dark"] .cell.mute{background:#0d141c; border-color:#151e28; color:#3a4658}
+  [data-theme="dark"] .cell.today{color:#7aa2ff}
+  [data-theme="dark"] .cell.sel{box-shadow:inset 0 0 0 2px #e9eef6}
+  [data-theme="dark"] .switch{background:#25303f}
+  [data-theme="dark"] .switch.on{background:#2b6cff}
+  [data-theme="dark"] .ghostbtn,[data-theme="dark"] .danger,[data-theme="dark"] .bar-more{background:#111926; color:var(--ink); border-color:var(--line)}
+  [data-theme="dark"] .danger{color:#ff8f82; border-color:#3a1d1b}
+  [data-theme="dark"] .intro{background:#0b1119}
+  [data-theme="dark"] .coach-hole{box-shadow:0 0 0 9999px rgba(0,0,0,.72)}
+  [data-theme="dark"] .coach-bubble button{background:#e9eef6; color:#0b1119}
+  [data-theme="dark"] #toast{background:#e9eef6; color:#0b1119}
+  [data-theme="dark"] .status{color:var(--ink)}
+  [data-theme="dark"] .formrow,[data-theme="dark"] .frow,[data-theme="dark"] .srow{border-color:#1a2430}
+  [data-theme="dark"] .sleeprow .moon{background:#1b2431; color:#9dbcff}
+  [data-theme="dark"] .tl-axis span,[data-theme="dark"] .axis div{color:#6b7a8d}
+  [data-theme="dark"] .tl-lab{color:#6b7a8d}
+  [data-theme="dark"] .rsub,[data-theme="dark"] .formsline,[data-theme="dark"] .note{color:#7d8a9c}
+  [data-theme="dark"] .tile .hold{color:#4a5768}
 </style>
 </head>
 <body>
@@ -439,7 +500,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v16</div>
+    <div class="kicker">Prototype · v17</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -465,7 +526,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v16';
+  const KEY = 'vicemaxxing.prototype.v17';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -598,7 +659,7 @@
   }
 
   const fresh = () => ({ vices: JSON.parse(JSON.stringify(CATALOGUE)), events: seedEvents(),
-                         nights: seedNights(), reminder:true, reminderTime:'21:00', intro:false, coach:false });
+                         nights: seedNights(), reminder:true, reminderTime:'21:00', intro:false, coach:false, theme:'light' });
 
   function seedNights(){
     const out = {};
@@ -1071,6 +1132,13 @@
       </div>
       ${state.reminder ? `<div class="srow"><div class="lab">Reminder time</div>
         <input type="time" id="rtime" value="${state.reminderTime}"></div>` : ''}
+      <div class="srow" style="margin-top:18px">
+        <div><div class="lab">Theme</div><div class="sub">dark for the evening</div></div>
+        <div class="seg2" style="margin:0; width:132px">
+          <button data-theme-set="light" class="${(state.theme||'light')==='light'?'on':''}">Light</button>
+          <button data-theme-set="dark" class="${state.theme==='dark'?'on':''}">Dark</button>
+        </div>
+      </div>
       <button class="ghostbtn" id="exportCsv">Export CSV</button>
       <button class="ghostbtn" id="exportJson">Export JSON</button>
       <button class="danger" id="wipe">Delete everything</button>
@@ -1092,6 +1160,7 @@
   }
 
   function render(){
+    document.documentElement.dataset.theme = state.theme || 'light';
     const cls = tab === 'settings' ? 'screen scroll' : 'screen';
     document.getElementById('screen').innerHTML = `<div class="${cls}">${SCREENS[tab]()}</div>`;
     renderBar();
@@ -1363,6 +1432,9 @@
     }
 
     if (e.target.closest('#sleepRow')){ openSleepSheet(); return; }
+
+    const th = e.target.closest('[data-theme-set]');
+    if (th){ state.theme = th.dataset.themeSet; save(); render(); return; }
 
     if (e.target.id === 'reminder'){ state.reminder = !state.reminder; save(); render(); return; }
 
