@@ -72,6 +72,17 @@
   .tiles.s2{display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:auto; gap:10px; align-content:center}
   .tiles.s4{display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto; gap:10px; align-content:center}
   .tiles.rows{display:flex; flex-direction:column; gap:8px}
+  .tiles.rows2{display:grid; grid-template-columns:1fr; grid-template-rows:1fr 1fr; gap:10px;
+               height:346px; flex:0 0 auto}
+  .tiles.rows2 .tile{display:flex; align-items:center; gap:14px; padding:14px}
+  .lcol{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:5px}
+  .rcol{flex:1 1 auto; min-width:0}
+  .rstats{font-size:11px; color:var(--muted); line-height:1.45; white-space:normal; overflow-wrap:anywhere}
+  .tile .over .sname{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#93a0b1;
+                     font-weight:700; margin-bottom:2px}
+  .tile.row .over .snum{font-size:36px}
+  .tile.row .over .slab{font-size:9px}
+  .tile.row.streaked .rtop, .tile.row.streaked .rnum, .tile.row.streaked .dchip{opacity:0}
   .tiles.rows .tile{flex:1 1 0; min-height:0; padding:8px 14px; display:flex; align-items:center;
                     gap:12px; flex-direction:row}
   .tiles.rows .tile .under{display:none}
@@ -405,7 +416,7 @@
   .tiles.many{grid-auto-rows:minmax(0,1fr); grid-template-rows:repeat(2,minmax(0,1fr))}
   .tiles.two{grid-template-columns:1fr; grid-auto-rows:1fr}
   .tile, .tiles.many .tile, .tiles.two .tile{min-height:0; overflow:hidden}
-  .tlwrap{flex:0 0 auto; height:180px; margin-top:8px}
+  .tlwrap{flex:0 0 auto; height:150px; margin-top:6px}
   .tiles.compact + .tlwrap{height:150px}
   .tl{height:100%}
   .panel-scroll{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px}
@@ -676,6 +687,34 @@
   };
   const fmtAttr = a => (a.v >= 10 ? Math.round(a.v) : Math.round(a.v * 10) / 10) + a.unit;
 
+  const agoText = ms => {
+    const m = Math.round(ms / 60000);
+    if (m < 60) return m + 'm ago';
+    const h = Math.floor(m / 60), mm = m % 60;
+    if (h < 24) return h + 'h' + (mm ? ' ' + mm + 'm' : '') + ' ago';
+    return Math.floor(h / 24) + 'd ago';
+  };
+
+  // priority order: time since last, month spend, month count, then the rest
+  const statBits = v => {
+    const evs = onDay(new Date(), v.id);
+    const yes = onCal(new Date(Date.now() - DAY), v.id).length;
+    const week = lastNDays(7).reduce((a,d) => a + onCal(d, v.id).length, 0) / 7;
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthEvs = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= monthStart);
+    const monthSpend = monthEvs.reduce((a,e) => a + evCost(e), 0);
+    const lastEv = state.events.filter(e => e.viceId === v.id)
+      .sort((a,b) => new Date(b.ts) - new Date(a.ts))[0];
+    const bits = [];
+    if (lastEv) bits.push(agoText(Date.now() - new Date(lastEv.ts).getTime()));
+    if (hasPrice(v)) bits.push(money(Math.round(monthSpend)) + ' month');
+    bits.push(monthEvs.length + ' month');
+    if (hasPrice(v)) bits.push(money(evs.reduce((a,e) => a + evCost(e), 0)) + ' today');
+    bits.push(yes + ' yest');
+    bits.push('5d ' + ma(v,5).toFixed(1) + ' · avg ' + week.toFixed(1));
+    return bits;
+  };
+
   const nightFor = (d) => state.nights[ymd(d || new Date())] || null;
 
   const sleepRow = () => {
@@ -752,15 +791,16 @@
     };
 
     const fsFor = (n, big) => {
-      const base = big ? 100 : (act.length >= 5 ? 46 : 62);
+      const base = big ? 96 : (act.length >= 5 ? 30 : 62);
       const len = String(n).length;
       return (len <= 1 ? base : len === 2 ? base * 0.82 : base * 0.64) + 'px';
     };
 
-    const streakOver = v => {
+    const streakOver = (v, withName) => {
       const s = streakFor(v);
       if (s < 2) return '';
-      return `<div class="over"><div class="snum">${s}</div><div class="slab">day streak</div></div>`;
+      return `<div class="over">${withName ? `<div class="sname">${E(v.name)}</div>` : ''}
+        <div class="snum">${s}</div><div class="slab">day streak</div></div>`;
     };
 
     const dayDeltaOf = (v, todayCount, week) => {
@@ -769,14 +809,18 @@
                txt: pct === 0 ? '—' : (pct > 0 ? '▲ ' : '▼ ') + Math.abs(pct) + '%' };
     };
 
-    // 3–4 vices: square tiles, count and % centred, metrics left-aligned beneath
-    const tileGrid = v => {
+    const chipFor = v => {
       const evs = onDay(new Date(), v.id);
-      const yes = onCal(new Date(Date.now() - DAY), v.id).length;
       const week = lastNDays(7).reduce((a,d) => a + onCal(d, v.id).length, 0) / 7;
-      const head = hasPrice(v) ? money(spendOf(v, evs)) : 'no cost';
       const d = dayDeltaOf(v, evs.length, week);
+      return `<span class="dchip ${d.cls}">${d.txt}</span>`;
+    };
+
+    // square: name, big centred count, wrapped stats
+    const tileSquare = (v, limit) => {
+      const evs = onDay(new Date(), v.id);
       const s = streakFor(v);
+      const stats = statBits(v).slice(0, limit).join(' · ');
       return `
         <div class="tile ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
           <div class="under">
@@ -784,75 +828,48 @@
               <span class="hold">hold</span></div>
             <div class="mid">
               <div class="tnum" style="font-size:${fsFor(evs.length, false)}">${evs.length}</div>
-              <span class="dchip ${d.cls}">${d.txt}</span>
+              ${chipFor(v)}
             </div>
-            <div class="sub">${head} · ${yes} yest${act.length >= 5 ? '' : `<br>5d <b>${ma(v,5).toFixed(1)}</b> ${trendHTML(v)} · avg <b>${week.toFixed(1)}</b>`}</div>
+            <div class="sub">${stats}</div>
           </div>
           ${streakOver(v)}
         </div>`;
     };
 
-    // 3 or 5 vices: full-width rows
-    const tileRow = (v, rich) => {
+    // two vices: count on the left, everything else on the right
+    const tileRow2 = v => {
       const evs = onDay(new Date(), v.id);
-      const yes = onCal(new Date(Date.now() - DAY), v.id).length;
-      const week = lastNDays(7).reduce((a,d) => a + onCal(d, v.id).length, 0) / 7;
-      const d = dayDeltaOf(v, evs.length, week);
       const s = streakFor(v);
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const monthEvs = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= monthStart);
-      const monthSpend = monthEvs.reduce((a,e) => a + evCost(e), 0);
-      const bits = [];
-      if (hasPrice(v)) bits.push(money(spendOf(v, evs)) + ' today');
-      bits.push(yes + ' yest');
-      if (rich && hasPrice(v)) bits.push(money(Math.round(monthSpend)) + ' month');
-      if (rich) bits.push('5d ' + ma(v,5).toFixed(1) + ' · avg ' + week.toFixed(1));
       return `
-        <div class="tile row" data-vice="${v.id}">
+        <div class="tile ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
+          <div class="under" style="display:flex; flex-direction:row; align-items:center; gap:16px; width:100%">
+            <div class="lcol">
+              <div class="tnum" style="font-size:${fsFor(evs.length, true)}">${evs.length}</div>
+              ${chipFor(v)}
+            </div>
+            <div class="rcol">
+              <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}
+                ${s >= 2 ? `<span class="streak">${s}d streak</span>` : ''}</div>
+              <div class="rstats">${statBits(v).slice(0, 5).join(' · ')}</div>
+            </div>
+          </div>
+          ${streakOver(v, true)}
+        </div>`;
+    };
+
+    // 3 or 5 vices: compact full-width rows
+    const tileRow = (v, limit) => {
+      const evs = onDay(new Date(), v.id);
+      const s = streakFor(v);
+      return `
+        <div class="tile row ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
           <div class="rtop">
-            <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}
-              ${s >= 2 ? `<span class="streak">${s}d streak</span>` : ''}</div>
-            <div class="rsub">${bits.join(' · ')}</div>
+            <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}</div>
+            <div class="rsub" style="white-space:normal; overflow:visible; text-overflow:clip">${statBits(v).slice(0, limit).join(' · ')}</div>
           </div>
           <div class="rnum">${evs.length}</div>
-          <span class="dchip ${d.cls}">${d.txt}</span>
-        </div>`;
-    };
-
-    // 1–2 vices: count and % on the left, a fuller readout on the right
-    const tileWide = (v, big) => {
-      const evs = onDay(new Date(), v.id);
-      const yes = onCal(new Date(Date.now() - DAY), v.id).length;
-      const week = lastNDays(7).reduce((a,d) => a + onCal(d, v.id).length, 0) / 7;
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const monthEvs = state.events.filter(e => e.viceId === v.id && new Date(e.ts) >= monthStart);
-      const monthSpend = monthEvs.reduce((a,e) => a + evCost(e), 0);
-      const d = dayDeltaOf(v, evs.length, week);
-      const s = streakFor(v);
-      const last = evs.length ? hhmm(new Date(evs[evs.length-1].ts)) : '—';
-      return `
-        <div class="tile ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}" ${big ? 'style="min-height:0"' : ''}>
-          <div class="under">
-            <div class="top"><span class="swatch" style="background:${v.colour}"></span><span class="nm">${E(v.name)}</span>
-              <span class="hold">hold</span></div>
-            <div class="wbody">
-              <div class="wleft">
-                <div class="tnum" style="font-size:${fsFor(evs.length, true)}">${evs.length}</div>
-                <span class="dchip ${d.cls}">${d.txt}</span>
-              </div>
-              <div class="wright">
-                <div class="mrow"><span>Today</span><b>${hasPrice(v) ? money(spendOf(v, evs)) : 'no cost'}</b></div>
-                <div class="mrow"><span>This month</span><b>${hasPrice(v) ? money(Math.round(monthSpend)) : '—'}</b></div>
-                <div class="mrow"><span>Month count</span><b>${monthEvs.length}</b></div>
-                <div class="mrow"><span>Yesterday</span><b>${yes}</b></div>
-                <div class="mrow"><span>5-day</span><b>${ma(v,5).toFixed(1)}</b></div>
-                <div class="mrow"><span>Average</span><b>${week.toFixed(1)}</b></div>
-                <div class="mrow"><span>Last</span><b>${last}</b></div>
-                ${attrTotals(v, evs).map(a => `<div class="mrow"><span>${a.label} today</span><b>${fmtAttr(a)}</b></div>`).join('')}
-              </div>
-            </div>
-          </div>
-          ${streakOver(v)}
+          ${chipFor(v)}
+          ${streakOver(v, true)}
         </div>`;
     };
 
@@ -866,7 +883,7 @@
         <div class="eyebrow">Today</div>
         <div class="date">${new Date().toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'})}</div>
         ${sleepRow()}
-        <div class="tiles s1" style="margin-top:14px">${tileGrid(v)}</div>
+        <div class="tiles s1" style="margin-top:12px">${tileSquare(v, 9)}</div>
         <div class="tlwrap">${timeline()}</div>
       `;
     }
@@ -879,10 +896,11 @@
       ${act.length >= 5 ? '' : `<div class="eyebrow" style="margin-top:12px">Day started ${hhmm(dayStart(new Date()))} · ${(Math.max(0,(new Date() - dayStart(new Date()))/3600000)).toFixed(0)}h so far</div>`}
       ${(() => {
         const n = act.length;
-        if (n === 3) return `<div class="tiles rows" style="margin-top:8px">${act.map(v => tileRow(v, true)).join('')}</div>`;
-        if (n >= 5) return `<div class="tiles rows" style="margin-top:8px">${act.map(v => tileRow(v, false)).join('')}</div>`;
-        const cls = n === 1 ? 's1' : n === 2 ? 's2' : 's4';
-        return `<div class="tiles ${cls}" style="margin-top:8px">${act.map(v => tileGrid(v)).join('')}</div>`;
+        if (n === 2) return `<div class="tiles rows2" style="margin-top:8px">${act.map(v => tileRow2(v)).join('')}</div>`;
+        if (n === 3) return `<div class="tiles rows" style="margin-top:8px">${act.map(v => tileRow(v, 6)).join('')}</div>`;
+        if (n >= 5) return `<div class="tiles rows" style="margin-top:8px">${act.map(v => tileRow(v, 3)).join('')}</div>`;
+        const cls = n === 1 ? 's1' : 's4';
+        return `<div class="tiles ${cls}" style="margin-top:8px">${act.map(v => tileSquare(v, n === 1 ? 9 : 3)).join('')}</div>`;
       })()}
       <div class="tlwrap">${timeline()}</div>
     `;
