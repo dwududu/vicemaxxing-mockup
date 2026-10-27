@@ -74,7 +74,11 @@
   .tiles.rows{display:flex; flex-direction:column; gap:8px}
   .tiles.rows2{display:grid; grid-template-columns:1fr; grid-template-rows:1fr 1fr; gap:10px;
                height:346px; flex:0 0 auto}
-  .tiles.rows2 .tile{display:flex; align-items:center; gap:14px; padding:14px}
+  .tiles.rows2 .tile{display:flex; align-items:stretch; gap:0; padding:0; overflow:hidden}
+  .tiles.rows2 .tile .under{display:flex; flex-direction:row; width:100%; height:100%}
+  .dbox{flex:1 1 0; min-width:0; display:flex; flex-direction:column; justify-content:center; padding:12px 14px}
+  .dbox.l{align-items:center; justify-content:center; border-right:1px solid var(--line); padding:12px 8px}
+  .dbox.r{align-items:flex-start; border-left:0}
   .lcol{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:5px}
   .rcol{flex:1 1 auto; min-width:0}
   .rstats{font-size:11px; color:var(--muted); line-height:1.45; white-space:normal}
@@ -909,14 +913,13 @@
       const s = streakFor(v);
       return `
         <div class="tile ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
-          <div class="under" style="display:flex; flex-direction:row; align-items:center; gap:16px; width:100%">
-            <div class="lcol">
+          <div class="under">
+            <div class="dbox l">
               <div class="tnum" style="font-size:${fsFor(evs.length, true)}">${evs.length}</div>
               ${chipFor(v)}
             </div>
-            <div class="rcol">
-              <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}
-                ${s >= 2 ? `<span class="streak">${s}d streak</span>` : ''}</div>
+            <div class="dbox r">
+              <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}</div>
               <div class="rstats col">${statBits(v).slice(0, 5).map(b => `<span class="st">${b}</span>`).join('')}</div>
             </div>
           </div>
