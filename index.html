@@ -358,7 +358,7 @@
   .ghostbtn{border:1.5px solid var(--line); background:#fff; border-radius:12px; width:100%; padding:14px;
             font-size:15px; font-family:inherit; font-weight:600; color:var(--ink); margin-top:10px; cursor:pointer}
   .note{font-size:12.5px; color:#94a3b8; margin-top:14px; line-height:1.5}
-  .vhead{display:flex; align-items:center; gap:9px; margin-top:22px}
+  .vhead{display:flex; align-items:center; gap:9px; margin-top:16px}
   .vhead .swatch{width:10px; height:10px; border-radius:3px}
   .vhead b{font-size:15.5px; color:var(--ink)}
   .vhead .kick{margin-left:auto; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
@@ -368,18 +368,14 @@
   .formrow .fname span{display:block; font-size:11.5px; color:#9aa5b6; margin-top:1px}
   .formrow input{width:74px !important; padding:8px 10px !important; font-size:14px !important}
   .formrow .cur{font-size:12.5px; color:#9aa5b6}
-  .formhead{display:flex; gap:6px; align-items:center; padding:2px 0 6px; font-size:9px; letter-spacing:.07em;
+  .formhead{display:grid; gap:6px; align-items:center; padding:2px 0 6px; font-size:9px; letter-spacing:.06em;
             text-transform:uppercase; color:#aab4c2; font-weight:650}
-  .formhead span:nth-child(1){flex:1}
-  .formhead span:nth-child(2),.formhead span:nth-child(3){width:46px; text-align:center}
-  .formhead span:nth-child(4){width:104px; text-align:right}
-  .frow{display:flex; gap:6px; align-items:center; padding:7px 0; border-bottom:1px solid #f4f7fb}
-  .frow .fn{flex:1 1 auto; min-width:0; font-size:13px; color:var(--body); overflow:hidden;
+  .formhead span{text-align:right}
+  .formhead span:first-child{text-align:left}
+  .frow{display:grid; gap:6px; align-items:center; padding:5px 0; border-bottom:1px solid #f4f7fb}
+  .frow .fn{min-width:0; font-size:12.5px; color:var(--body); overflow:hidden;
             text-overflow:ellipsis; white-space:nowrap}
-  .frow input{width:46px !important; padding:6px 6px !important; font-size:13px !important; text-align:center}
-  .frow .ai{display:flex; align-items:center; gap:2px}
-  .frow .ai input{width:44px !important}
-  .frow .ai em{font-style:normal; font-size:9px; color:#b6c0cd}
+  .frow input{width:100% !important; padding:5px 4px !important; font-size:12.5px !important; text-align:right}
   .attrrow{display:flex; gap:12px; padding:0 0 10px; border-bottom:1px solid #f4f7fb}
   .attrrow label{flex:1; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted)}
   .attrrow input{width:60px !important; padding:6px 8px !important; font-size:13px !important}
@@ -432,7 +428,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v15</div>
+    <div class="kicker">Prototype · v16</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -458,7 +454,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v15';
+  const KEY = 'vicemaxxing.prototype.v16';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -494,7 +490,8 @@
           attrs:[{ k:'alc', label:'Alcohol', unit:'units', v:1.0 }, { k:'cal', label:'Calories', unit:'kcal', v:60 }] }
       ]},
     { id:'fap', name:'Fap', colour:'#6d28d9', on:true, forms:[
-        { id:'session', name:'Session', plural:'sessions', packPrice:0, packUnits:1, note:'no cost attached', attrs:[] }
+        { id:'session', name:'Session', plural:'sessions', packPrice:0, packUnits:1, note:'no cost attached',
+          timed:true, defaultDur:10, attrs:[] }
       ]},
     { id:'soda', name:'Soda', colour:'#0f766e', on:true, forms:[
         { id:'can',    name:'Can',    plural:'cans',    packPrice:9,  packUnits:1, note:'per can',
@@ -585,6 +582,7 @@
         }
       }
     }
+    out.forEach(e => { if (e.viceId === 'fap') e.dur = 5 + Math.floor(rnd() * 21); });
     return out.sort((a,b) => new Date(a.ts) - new Date(b.ts));
   }
 
@@ -606,7 +604,7 @@
   let state;
   try { state = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ state = fresh(); }
   if (!state.events || !state.vices) state = fresh();
-  if (state.vices.length !== 5 || !state.vices[0].forms[0].packPrice) state = fresh();  // catalogue changed
+  if (state.vices.length !== 5 || !state.vices[0].forms[0].packPrice || !state.vices[2].forms[0].timed) state = fresh();  // catalogue changed
   const save = () => localStorage.setItem(KEY, JSON.stringify(state));
 
   let tab = 'today', statsWindow = 7, filterVice = 'smoke';
@@ -984,6 +982,17 @@
         <div class="card"><div class="k">Longest gap</div><div class="v">${gap?dur(gap):'—'}</div><div class="s">last ${statsWindow} days</div></div>
       </div>
       ${streakFor(v) >= 2 ? `<div class="formsline">Clean streak · <b>${streakFor(v)} days</b> with nothing logged</div>` : ''}
+      ${(() => {
+        const timed = monthEvs.filter(e => e.dur > 0);
+        if (!timed.length) return '';
+        const totalMin = timed.reduce((a,e) => a + e.dur, 0);
+        const avgMin = Math.round(totalMin / timed.length);
+        const streak = streakFor(v);
+        const savedMin = streak * avgMin;
+        const hm = m => (Math.floor(m/60) ? Math.floor(m/60) + 'h ' : '') + (m % 60) + 'm';
+        return `<div class="formsline">Time spent · <b>${hm(totalMin)}</b> this month · avg <b>${avgMin}m</b></div>
+                ${savedMin ? `<div class="formsline">Time saved · <b>${hm(savedMin)}</b> across ${streak} clean day${streak>1?'s':''}</div>` : ''}`;
+      })()}
       ${(() => { const t = attrTotals(v, monthEvs); return t.length
           ? `<div class="formsline">${t.map(a => a.label + ' <b>' + fmtAttr(a) + '</b>').join(' · ')} this month</div>` : ''; })()}
       <div class="formsline">${breakdown(v, monthEvs).split(' · ').map(p=>p.replace(/^(\d+)/,'<b>$1</b>')).join(' · ') || 'No entries this month'}</div>
@@ -1011,13 +1020,26 @@
         <div><div class="lab">Show on Today</div><div class="sub">${v.forms.length} form${v.forms.length>1?'s':''}: ${v.forms.map(f=>f.name.toLowerCase()).join(', ')}</div></div>
         <button class="switch ${v.on?'on':''}" data-vice-toggle="${v.id}"><i></i></button>
       </div>
-      ${v.on ? `<div class="formhead"><span>Form</span><span>HK$</span><span>units</span><span>per unit</span></div>` + v.forms.map(f => `
-        <div class="frow">
-          <span class="fn">${E(f.name)}</span>
-          <input type="number" data-price="${v.id}:${f.id}" value="${f.packPrice}" min="0" step="1" inputmode="numeric">
-          <input type="number" data-units="${v.id}:${f.id}" value="${f.packUnits}" min="1" step="1" inputmode="numeric">
-          ${(f.attrs || []).map(a => `<span class="ai"><input type="number" data-attr="${v.id}:${f.id}:${a.k}" value="${a.v}" min="0" step="0.1" inputmode="decimal"><em>${a.unit}</em></span>`).join('')}
-        </div>`).join('') : ''}`;
+      ${v.on ? (() => {
+        const priced = v.forms.some(f => f.packPrice > 0);
+        const attrs = v.forms.reduce((m, f) => Math.max(m, (f.attrs || []).length), 0);
+        const timed = v.forms.some(f => f.timed);
+        const attrList = (v.forms.find(f => (f.attrs||[]).length) || {attrs:[]}).attrs;
+        const cols = `minmax(0,1fr) ${priced ? '56px 44px ' : ''}${timed ? '46px ' : ''}${'54px '.repeat(attrs)}`;
+        const head = `<div class="formhead" style="grid-template-columns:${cols}">
+            <span>Form</span>${priced ? '<span>HK$</span><span>units</span>' : ''}${timed ? '<span>min</span>' : ''}
+            ${attrList.map(a => `<span>${a.unit}</span>`).join('')}
+          </div>`;
+        const rows = v.forms.map(f => `
+          <div class="frow" style="grid-template-columns:${cols}">
+            <span class="fn">${E(f.name)}</span>
+            ${priced ? `<input type="number" data-price="${v.id}:${f.id}" value="${f.packPrice}" min="0" step="1" inputmode="numeric">
+                        <input type="number" data-units="${v.id}:${f.id}" value="${f.packUnits}" min="1" step="1" inputmode="numeric">` : ''}
+            ${timed ? `<input type="number" data-dur="${v.id}:${f.id}" value="${f.defaultDur || 10}" min="1" step="1" inputmode="numeric">` : ''}
+            ${(f.attrs || []).map(a => `<input type="number" data-attr="${v.id}:${f.id}:${a.k}" value="${a.v}" min="0" step="0.1" inputmode="decimal">`).join('')}
+          </div>`).join('');
+        return head + rows;
+      })() : ''}`;
 
     return `
       <div class="status"><span>${clock()}</span><span>Settings</span></div>
@@ -1031,7 +1053,8 @@
       </div>
       ${state.reminder ? `<div class="srow"><div class="lab">Reminder time</div>
         <input type="time" id="rtime" value="${state.reminderTime}"></div>` : ''}
-      <button class="ghostbtn" id="export">Export data</button>
+      <button class="ghostbtn" id="exportCsv">Export CSV</button>
+      <button class="ghostbtn" id="exportJson">Export JSON</button>
       <button class="danger" id="wipe">Delete everything</button>
       <p class="note">Everything stays on this device. In the real app, export opens the Android share sheet.</p>`;
   }
@@ -1067,8 +1090,10 @@
 
   function addEvent(viceId, extra){
     const v = vice(viceId);
+    const baseForm = v.forms[0];
     const ev = Object.assign({ id:'e'+Date.now()+Math.floor(Math.random()*1000), viceId,
-      formId: v.forms[0].id, ts:new Date().toISOString(), craving:0, trigger:'', note:'' }, extra || {});
+      formId: baseForm.id, ts:new Date().toISOString(), craving:0, trigger:'', note:'',
+      dur: baseForm.timed ? (baseForm.defaultDur || 10) : undefined }, extra || {});
     state.events.push(ev); save(); render(); return ev;
   }
 
@@ -1077,6 +1102,7 @@
     const f0 = form(v0, ev ? ev.formId : v0.forms[0].id);
     const d = ev ? new Date(ev.ts) : new Date();
     let chosenVice = v0.id, chosenForm = f0.id, craving = ev ? ev.craving : 0, trigger = ev ? ev.trigger : '';
+    let dur = ev && ev.dur ? ev.dur : (f0.defaultDur || 10);
     const sheet = document.getElementById('sheet');
 
     const paint = () => {
@@ -1092,6 +1118,9 @@
           `<button class="chip ${f.id===chosenForm?'on':''}" data-form="${f.id}">${E(f.name)}</button>`).join('')}</div>` : ''}
         <div class="fieldlabel">Time</div>
         <input type="time" id="stime" value="${hhmm(d)}">
+        ${form(v, chosenForm).timed ? `<div class="fieldlabel">Duration</div>
+        <div class="chips">${[5,10,15,20,30,45,60].map(m =>
+          `<button class="chip ${dur===m?'on':''}" data-durval="${m}">${m} min</button>`).join('')}</div>` : ''}
         <div class="fieldlabel">Craving</div>
         <div class="cravings">${[1,2,3,4,5].map(n =>
           `<button class="cr ${craving===n?'on':''}" data-cr="${n}">${n}</button>`).join('')}</div>
@@ -1107,6 +1136,10 @@
         chosenVice = b.dataset.svice; chosenForm = vice(chosenVice).forms[0].id; paint();
       });
       sheet.querySelectorAll('[data-form]').forEach(b => b.onclick = () => { chosenForm = b.dataset.form; paint(); });
+      sheet.querySelectorAll('[data-durval]').forEach(b => b.onclick = () => {
+        dur = +b.dataset.durval;
+        sheet.querySelectorAll('[data-durval]').forEach(x => x.classList.toggle('on', +x.dataset.durval === dur));
+      });
       sheet.querySelectorAll('[data-cr]').forEach(b => b.onclick = () => {
         const n = +b.dataset.cr; craving = craving === n ? 0 : n;
         sheet.querySelectorAll('[data-cr]').forEach(x => x.classList.toggle('on', +x.dataset.cr === craving));
@@ -1120,10 +1153,12 @@
         const base = ev ? new Date(ev.ts) : new Date();
         base.setHours(h || 0, m || 0, 0, 0);
         if (ev){
-          Object.assign(ev, { ts: base.toISOString(), viceId: chosenVice, formId: chosenForm, craving, trigger });
+          Object.assign(ev, { ts: base.toISOString(), viceId: chosenVice, formId: chosenForm, craving, trigger,
+                              dur: form(vice(chosenVice), chosenForm).timed ? dur : undefined });
           save(); closeSheet(); render(); toast('Saved');
         } else {
-          closeSheet(); addEvent(chosenVice, { formId: chosenForm, ts: base.toISOString(), craving, trigger });
+          closeSheet(); addEvent(chosenVice, { formId: chosenForm, ts: base.toISOString(), craving, trigger,
+                                              dur: form(vice(chosenVice), chosenForm).timed ? dur : undefined });
           toast(hhmm(base) + ' · ' + vice(chosenVice).name + ' · ' + form(vice(chosenVice), chosenForm).name);
         }
       };
@@ -1312,6 +1347,34 @@
     if (e.target.closest('#sleepRow')){ openSleepSheet(); return; }
 
     if (e.target.id === 'reminder'){ state.reminder = !state.reminder; save(); render(); return; }
+
+    if (e.target.id === 'exportCsv'){
+      const head = ['date','time','vice','form','craving','trigger','note','minutes'];
+      const rows = state.events.map(x => {
+        const dt = new Date(x.ts);
+        return [ymd(dt), hhmm(dt), vice(x.viceId).name, form(vice(x.viceId), x.formId).name,
+                x.craving || '', x.trigger || '', x.note || '', x.dur || ''];
+      });
+      const esc = v => `"${String(v).replace(/"/g,'""')}"`;
+      const csv = [head, ...rows].map(r => r.map(esc).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'vicemaxxing.csv'; a.click(); toast('CSV exported');
+      return;
+    }
+
+    if (e.target.id === 'exportJson'){
+      const out = {
+        exported: new Date().toISOString(),
+        vices: state.vices,
+        events: state.events.map(x => ({ ...x, vice: vice(x.viceId).name, form: form(vice(x.viceId), x.formId).name })),
+        nights: state.nights
+      };
+      const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'vicemaxxing.json'; a.click(); toast('JSON exported');
+      return;
+    }
 
     if (e.target.id === 'export'){
       const rows = state.events.map(x => ({ time:x.ts, vice: vice(x.viceId).name,
