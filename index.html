@@ -77,7 +77,8 @@
   .tiles.rows2 .tile{display:flex; align-items:stretch; gap:0; padding:0; overflow:hidden}
   .tiles.rows2 .tile .under{display:flex; flex-direction:row; width:100%; height:100%}
   .dbox{flex:1 1 0; min-width:0; display:flex; flex-direction:column; justify-content:center; padding:12px 14px}
-  .dbox.l{align-items:center; justify-content:center; padding:12px 8px}
+  .dbox.l{flex-direction:row; align-items:center; justify-content:flex-start; gap:10px; padding:12px 10px}
+  .lnam{display:flex; flex-direction:column; align-items:flex-start; gap:4px}
   .dbox.r{align-items:center; text-align:center; padding-left:4px}
   .dbox.r .rname{justify-content:center}
   .dbox.r .rstats.col{align-items:center}
@@ -91,7 +92,8 @@
                      font-weight:700; margin-bottom:2px}
   .tile.row .over .snum{font-size:36px}
   .tile.row .over .slab{font-size:9px}
-  .tile.row.streaked{background:#f4f9f6}
+  .tile.row.streaked{background:#eef7f1; border-color:#cfe6da}
+  .tile.row.streaked .rtop, .tile.row.streaked .rnum, .tile.row.streaked .dchip{opacity:0}
   .tiles.rows .tile{flex:1 1 0; min-height:0; padding:8px 14px; display:flex; align-items:center;
                     gap:12px; flex-direction:row}
   .tiles.rows .tile .under{display:none}
@@ -478,7 +480,7 @@
   [data-theme="dark"] .dchip.flat{background:#1b2431; color:var(--muted)}
   [data-theme="dark"] .streak,[data-theme="dark"] .streak.long{background:#12301f; color:#5fd39a}
   [data-theme="dark"] .tile.streaked{background:#0f1620; border-color:#1d2734}
-  [data-theme="dark"] .tile.row.streaked{background:#0f1a15}
+  [data-theme="dark"] .tile.row.streaked{background:#0f1d16; border-color:#1e3a2b}
   [data-theme="dark"] .tl-dot{border-color:#111926; box-shadow:0 0 0 1px rgba(0,0,0,.4)}
   [data-theme="dark"] .tl-base{background:#1d2734}
   [data-theme="dark"] .tl-now{background:#3a4a60}
@@ -923,9 +925,11 @@
         <div class="tile ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
           <div class="under">
             <div class="dbox l">
-              <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}</div>
               <div class="tnum" style="font-size:${fsFor(evs.length, true)}">${evs.length}</div>
-              ${chipFor(v)}
+              <div class="lnam">
+                <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}</div>
+                ${chipFor(v)}
+              </div>
             </div>
             <div class="dbox r">
               <div class="rstats col">${statBits(v).slice(0, 5).map(b => `<span class="st">${b}</span>`).join('')}</div>
@@ -943,11 +947,11 @@
         <div class="tile row ${s >= 2 ? 'streaked' : ''}" data-vice="${v.id}">
           <div class="rtop">
             <div class="rname"><span class="swatch" style="background:${v.colour}"></span>${E(v.name)}</div>
-            <div class="rsub" style="white-space:normal; overflow:visible; text-overflow:clip">${
-              s >= 2 ? `<span class="streakline">${s} day streak</span>` : statHTML(statBits(v).slice(0, limit))
-            }</div>
+            <div class="rsub" style="white-space:normal; overflow:visible; text-overflow:clip">${statHTML(statBits(v).slice(0, limit))}</div>
           </div>
-          ${s >= 2 ? '' : `<div class="rnum">${evs.length}</div>${chipFor(v)}`}
+          <div class="rnum">${evs.length}</div>
+          ${chipFor(v)}
+          ${streakOver(v, true)}
         </div>`;
     };
 
