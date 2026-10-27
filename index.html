@@ -363,6 +363,13 @@
   .cell.mute{color:#c9d1dd; background:#fbfcfe; border-color:#f4f7fb; cursor:default}
   .cell.today{outline:2px solid var(--accent); outline-offset:-1px; font-weight:700; color:var(--accent)}
   .cell.sel{box-shadow:inset 0 0 0 2px var(--ink)}
+  .pastrow{display:flex; justify-content:flex-end; margin-top:6px}
+  .pastbtn{border:1px solid var(--line); background:var(--surface); color:var(--body); font-family:inherit;
+    font-size:12px; font-weight:600; padding:6px 11px; border-radius:99px; cursor:pointer}
+  .datestep{display:flex; align-items:center; gap:10px}
+  .datestep button{width:44px; height:40px; border-radius:12px; border:1px solid var(--line); background:var(--soft);
+    color:var(--ink); font-size:18px; font-family:inherit; cursor:pointer}
+  .datestep b{flex:1; text-align:center; font-size:15px; color:var(--ink)}
   .legend{display:flex; align-items:center; gap:6px; margin-top:16px; font-size:11px; color:#9aa5b6}
   .legend i{width:13px; height:13px; border-radius:4px; display:block}
   .daypanel{flex:1 1 auto; min-height:0; overflow-y:auto; margin-top:14px; border-top:1px solid var(--line); padding-top:10px}
@@ -1036,6 +1043,7 @@
       </div>
       <div class="dow">${['M','T','W','T','F','S','S'].map(d=>`<div>${d}</div>`).join('')}</div>
       <div class="cal">${cells}</div>
+      <div class="pastrow"><button class="pastbtn" id="addpast">＋ Add past entry</button></div>
       <div class="legend">Less<i style="background:#eef1f6"></i><i style="background:#dbe3ef"></i><i style="background:#a9bbdd"></i><i style="background:${v.colour}"></i>More</div>
       <div class="daypanel panel-scroll">
         <div class="h"><b>${selectedDay.toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'})}</b>
@@ -1216,10 +1224,13 @@
     state.events.push(ev); save(); render(); return ev;
   }
 
-  function openSheet(ev, viceId){
+  function openSheet(ev, viceId, backDate){
     const v0 = vice(ev ? ev.viceId : viceId);
     const f0 = form(v0, ev ? ev.formId : v0.forms[0].id);
-    const d = ev ? new Date(ev.ts) : new Date();
+    let baseDate = ev ? new Date(ev.ts) : (backDate ? new Date(backDate) : new Date());
+    const canBackdate = !ev && !!backDate;
+    if (canBackdate) baseDate.setHours(20, 0, 0, 0);
+    const d = baseDate;
     let chosenVice = v0.id, chosenForm = f0.id, craving = ev ? ev.craving : 0, trigger = ev ? ev.trigger : '';
     let dur = ev && ev.dur ? ev.dur : (f0.defaultDur || 10);
     const sheet = document.getElementById('sheet');
@@ -1228,13 +1239,19 @@
       const v = vice(chosenVice);
       sheet.innerHTML = `
         <div class="grab"></div>
-        <h3>${ev ? 'Edit' : 'Log'} ${E(form(v, chosenForm).name.toLowerCase())}</h3>
+        <h3>${canBackdate ? 'Add past' : (ev ? 'Edit' : 'Log')} ${E(form(v, chosenForm).name.toLowerCase())}</h3>
         <div class="fieldlabel">Vice</div>
         <div class="chips">${active().map(x =>
           `<button class="chip ${x.id===chosenVice?'on':''}" data-svice="${x.id}">${E(x.name)}</button>`).join('')}</div>
         ${v.forms.length > 1 ? `<div class="fieldlabel">Form</div>
         <div class="chips">${v.forms.map(f =>
           `<button class="chip ${f.id===chosenForm?'on':''}" data-form="${f.id}">${E(f.name)}</button>`).join('')}</div>` : ''}
+        ${canBackdate ? `<div class="fieldlabel">Day</div>
+        <div class="datestep">
+          <button data-dshift="-1">‹</button>
+          <b id="dlabel">${baseDate.toLocaleDateString('en-GB',{weekday:'short', day:'numeric', month:'short'})}</b>
+          <button data-dshift="1">›</button>
+        </div>` : ''}
         <div class="fieldlabel">Time</div>
         <input type="time" id="stime" value="${hhmm(d)}">
         ${form(v, chosenForm).timed ? `<div class="fieldlabel">Duration</div>
@@ -1255,6 +1272,11 @@
         chosenVice = b.dataset.svice; chosenForm = vice(chosenVice).forms[0].id; paint();
       });
       sheet.querySelectorAll('[data-form]').forEach(b => b.onclick = () => { chosenForm = b.dataset.form; paint(); });
+      sheet.querySelectorAll('[data-dshift]').forEach(b => b.onclick = () => {
+        const next = new Date(baseDate); next.setDate(next.getDate() + (+b.dataset.dshift));
+        if (next > new Date()) return;
+        baseDate = next; paint();
+      });
       sheet.querySelectorAll('[data-durval]').forEach(b => b.onclick = () => {
         dur = +b.dataset.durval;
         sheet.querySelectorAll('[data-durval]').forEach(x => x.classList.toggle('on', +x.dataset.durval === dur));
@@ -1269,7 +1291,7 @@
       });
       document.getElementById('ssave').onclick = () => {
         const [h,m] = document.getElementById('stime').value.split(':').map(Number);
-        const base = ev ? new Date(ev.ts) : new Date();
+        const base = new Date(baseDate);
         base.setHours(h || 0, m || 0, 0, 0);
         if (ev){
           Object.assign(ev, { ts: base.toISOString(), viceId: chosenVice, formId: chosenForm, craving, trigger,
@@ -1440,6 +1462,8 @@
     }
 
     const edit = e.target.closest('[data-edit]');
+    const addPast = e.target.closest('#addpast');
+    if (addPast){ openSheet(null, filterVice, selectedDay); return; }
     if (edit){ const ev = state.events.find(x => x.id === edit.dataset.edit); if (ev) openSheet(ev); return; }
 
     const f = e.target.closest('[data-filter]');
