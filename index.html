@@ -73,12 +73,14 @@
   .tiles.s4{display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto; gap:10px; align-content:center}
   .tiles.rows{display:flex; flex-direction:column; gap:8px}
   .tiles.rows2{display:grid; grid-template-columns:1fr; grid-template-rows:1fr 1fr; gap:10px;
-               height:346px; flex:0 0 auto}
+               height:auto; flex:1 1 0; min-height:0}
   .tiles.rows2 .tile{display:flex; align-items:stretch; gap:0; padding:0; overflow:hidden}
   .tiles.rows2 .tile .under{display:flex; flex-direction:row; width:100%; height:100%}
   .dbox{flex:1 1 0; min-width:0; display:flex; flex-direction:column; justify-content:center; padding:12px 14px}
-  .dbox.l{align-items:center; justify-content:center; border-right:1px solid var(--line); padding:12px 8px}
-  .dbox.r{align-items:flex-start; border-left:0}
+  .dbox.l{align-items:center; justify-content:center; padding:12px 8px}
+  .dbox.r{align-items:center; text-align:center; padding-left:4px}
+  .dbox.r .rname{justify-content:center}
+  .dbox.r .rstats.col{align-items:center}
   .lcol{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:5px}
   .rcol{flex:1 1 auto; min-width:0}
   .rstats{font-size:11px; color:var(--muted); line-height:1.45; white-space:normal}
@@ -239,7 +241,8 @@
   .tl-dot{position:absolute; top:50%; width:12px; height:12px; border-radius:50%; transform:translate(-50%,-50%);
           border:1.5px solid #fff; box-shadow:0 0 0 1px rgba(15,23,42,.06); cursor:pointer; padding:0}
   .tl-dot::after{content:''; position:absolute; inset:-9px}
-  .tl-nowwrap{position:absolute; left:72px; right:12px; top:12px; bottom:24px; pointer-events:none}
+  .tl-lanes{position:relative}
+  .tl-nowwrap{position:absolute; left:72px; right:0; top:0; bottom:0; pointer-events:none}
   .tl-now{position:absolute; top:0; bottom:0; width:1.5px; background:#c7d2e4}
   .tl-axis span{position:absolute; transform:translateX(-50%)}
   .tl-empty{font-size:13px; color:#9aa5b6; padding:10px 2px 6px}
@@ -423,8 +426,8 @@
   .tiles.many{grid-auto-rows:minmax(0,1fr); grid-template-rows:repeat(2,minmax(0,1fr))}
   .tiles.two{grid-template-columns:1fr; grid-auto-rows:1fr}
   .tile, .tiles.many .tile, .tiles.two .tile{min-height:0; overflow:hidden}
-  .tlwrap{flex:0 0 auto; height:150px; display:flex; flex-direction:column; justify-content:center; margin:12px 0 4px}
-  .tl{flex:0 0 auto; height:150px; margin:0}
+  .tlwrap{flex:0 0 auto; display:flex; flex-direction:column; justify-content:center; margin:12px 0 4px}
+  .tl{flex:0 0 auto; height:auto; margin:0}
   .tiles.compact + .tlwrap{height:150px}
   .panel-scroll{flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px}
   .cal{flex:0 0 auto}
@@ -845,8 +848,10 @@
       for (let x = t; x <= endTime; x = new Date(x.getTime() + step * 60000)) ticks.push(x);
 
       return `<div class="tl">
-        <div class="tl-nowwrap"><div class="tl-now" style="left:${pct(nowEl).toFixed(2)}%"></div></div>
-        ${lanes}
+        <div class="tl-lanes">
+          <div class="tl-nowwrap"><div class="tl-now" style="left:${pct(nowEl).toFixed(2)}%"></div></div>
+          ${lanes}
+        </div>
         <div class="tl-lane" style="height:15px; margin-top:4px">
           <span class="tl-lab"></span>
           <div class="tl-track" style="height:15px">
