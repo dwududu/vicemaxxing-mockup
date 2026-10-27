@@ -94,6 +94,7 @@
   .tile.row .over .slab{font-size:9px}
   .tile.row.streaked{background:#eef7f1; border-color:#cfe6da}
   .tile.row.streaked .rtop, .tile.row.streaked .rnum, .tile.row.streaked .dchip{opacity:0}
+  .tile.streaked .under .dbox{opacity:0}
   .tiles.rows .tile{flex:1 1 0; min-height:0; padding:8px 14px; display:flex; align-items:center;
                     gap:12px; flex-direction:row}
   .tiles.rows .tile .under{display:none}
@@ -102,6 +103,8 @@
   .rtop{flex:1 1 auto; min-width:0}
   .rname{display:flex; align-items:center; gap:7px; font-size:13.5px; font-weight:650; color:var(--ink)}
   .rsub{font-size:10.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .tiles.rows .rnum{width:54px; text-align:right; font-variant-numeric:tabular-nums}
+  .tiles.rows .dchip{width:64px; text-align:center; justify-content:center}
   .rnum{font-size:30px; font-weight:700; color:var(--ink); letter-spacing:-.04em; font-variant-numeric:tabular-nums}
   .tiles.rows .dchip{flex:0 0 auto}
   .tiles.triple{display:flex; flex-wrap:wrap; justify-content:center; align-content:space-between;
@@ -515,7 +518,7 @@
 
 <div class="intro" id="intro">
   <div>
-    <div class="kicker">Prototype · v17</div>
+    <div class="kicker">Prototype · v18</div>
     <h1>Count it. Then count your sleep.</h1>
     <p>Vices by tap, sleep by morning note. Both stay on this phone.</p>
   </div>
@@ -541,7 +544,7 @@
 
 <script>
 (() => {
-  const KEY = 'vicemaxxing.prototype.v17';
+  const KEY = 'vicemaxxing.prototype.v18';
   const TRIGGERS = ['Habit','Stress','Social','After meal','Boredom','Craving','Other'];
   const DAY = 86400000;
 
@@ -559,13 +562,13 @@
   const CATALOGUE = [
     { id:'smoke', name:'Smoke', colour:'#1d4ed8', on:true, forms:[
         { id:'cig',   name:'Cigarette', plural:'cigarettes', packPrice:107, packUnits:20,
-          note:'per stick',
+          note:'per stick', timed:true, defaultDur:5,
           attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:0.8 }, { k:'tar', label:'Tar', unit:'mg', v:10 }] },
         { id:'pod',   name:'Vape session', plural:'sessions', packPrice:55, packUnits:60,
-          note:'~60 sessions per pod',
+          note:'~60 sessions per pod', timed:true, defaultDur:10,
           attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:0.33 }, { k:'tar', label:'Tar', unit:'mg', v:0 }] },
         { id:'pouch', name:'Pouch', plural:'pouches', packPrice:68, packUnits:20,
-          note:'per pouch',
+          note:'per pouch', timed:true, defaultDur:15,
           attrs:[{ k:'nic', label:'Nicotine', unit:'mg', v:8 }, { k:'tar', label:'Tar', unit:'mg', v:0 }] }
       ]},
     { id:'alcohol', name:'Alcohol', colour:'#b45309', on:true, forms:[
@@ -669,7 +672,10 @@
         }
       }
     }
-    out.forEach(e => { if (e.viceId === 'fap') e.dur = 5 + Math.floor(rnd() * 21); });
+    out.forEach(e => {
+      if (e.viceId === 'fap') e.dur = 5 + Math.floor(rnd() * 21);
+      if (e.viceId === 'smoke') e.dur = (e.formId === 'pod' ? 8 : 4) + Math.floor(rnd() * 4);
+    });
     return out.sort((a,b) => new Date(a.ts) - new Date(b.ts));
   }
 
@@ -785,13 +791,18 @@
     if (lastEv) bits.push(agoText(Date.now() - new Date(lastEv.ts).getTime()));
     if (hasPrice(v)) bits.push(money(Math.round(monthSpend)) + ' month');
     bits.push(monthEvs.length + ' month');
+    const timedEvs = monthEvs.filter(e => e.dur > 0);
+    if (timedEvs.length){
+      const mins = timedEvs.reduce((a,e) => a + e.dur, 0);
+      bits.push((Math.floor(mins/60) ? Math.floor(mins/60) + 'h ' : '') + (mins % 60) + 'm time');
+    }
     if (hasPrice(v)) bits.push(money(evs.reduce((a,e) => a + evCost(e), 0)) + ' today');
     bits.push(yes + ' yest');
     bits.push('5d ' + ma(v,5).toFixed(1) + ' · avg ' + week.toFixed(1));
     return bits;
   };
 
-  const statHTML = bits => bits.map(b => `<span class="st">${b}</span>`).join(' · ');
+  const statHTML = bits => bits.map((b,i) => `<span class="st">${i ? '· ' : ''}${b}</span>`).join(' ');
   const statCol = bits => bits.map(b => `<span class="st">${b}</span>`).join('');
 
   const nightFor = (d) => state.nights[ymd(d || new Date())] || null;
@@ -980,7 +991,7 @@
         const n = act.length;
         if (n === 2) return `<div class="tiles rows2" style="margin-top:8px">${act.map(v => tileRow2(v)).join('')}</div>`;
         if (n === 3) return `<div class="tiles rows" style="margin-top:8px">${act.map(v => tileRow(v, 6)).join('')}</div>`;
-        if (n >= 5) return `<div class="tiles rows" style="margin-top:8px">${act.map(v => tileRow(v, 3)).join('')}</div>`;
+        if (n >= 5) return `<div class="tiles rows" style="margin-top:8px">${act.map(v => tileRow(v, 4)).join('')}</div>`;
         const cls = n === 1 ? 's1' : 's4';
         return `<div class="tiles ${cls}" style="margin-top:8px">${act.map(v => tileSquare(v, n === 1 ? 9 : 3)).join('')}</div>`;
       })()}
